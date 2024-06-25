@@ -50,7 +50,7 @@ def toRepresentative(g):
 
 
 # Gives the G action result of group element g from G onto vector v from V - VERIFY THIS, MAKE SURE IT IS CORRECT
-def Gaction(g, vec):
+def gAction(g, vec):
     newVec = V([_sage_const_0 ] * (q+_sage_const_1 ))
     for i in range(_sage_const_0 , q+_sage_const_1 ):
         newRep = toRepresentative(cosetReps[i] * g.inverse())
@@ -71,20 +71,20 @@ def Gaction(g, vec):
 def innerProduct(vec1, vec2):
     sol = _sage_const_0 
     for elem in G.list():
-        temp = (Gaction(elem, vec1)).dot_product(Gaction(elem, vec2))
+        temp = (gAction(elem, vec1)).dot_product(gAction(elem, vec2))
         #print(elem)
         #print(temp)
         sol = sol + temp
     sol = sol / G.order()
     return round(sol.real(), _sage_const_5 ) + round(sol.imag(), _sage_const_5 ) * I
-# Highly inefficient - q^6 runtime
+# Highly inefficient - q^6 runtime, figure out how to somehow iterate only through cosets???
 
 
 
 
 #g = G.random_element()
 #vec = V([1, 2, 3, 4 + 5*I, -2, 10])
-#print(Gaction(g, vec))
+#print(gAction(g, vec))
 
 #vec1 = V([1, 0, 3, 4])
 #vec2 = V([2, 2, 1, 0])

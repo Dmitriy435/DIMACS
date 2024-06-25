@@ -45,7 +45,7 @@ def toRepresentative(g):
 
 
 # Gives the G action result of group element g from G onto vector v from V - VERIFY THIS, MAKE SURE IT IS CORRECT
-def Gaction(g, vec):
+def gAction(g, vec):
     newVec = V([0] * (q+1))
     for i in range(0, q+1):
         newRep = toRepresentative(cosetReps[i] * g.inverse())
@@ -66,7 +66,7 @@ def Gaction(g, vec):
 def innerProduct(vec1, vec2):
     sol = 0
     for elem in G.list():
-        temp = (Gaction(elem, vec1)).dot_product(Gaction(elem, vec2))
+        temp = (gAction(elem, vec1)).dot_product(gAction(elem, vec2))
         #print(elem)
         #print(temp)
         sol = sol + temp
@@ -79,7 +79,7 @@ def innerProduct(vec1, vec2):
 
 #g = G.random_element()
 #vec = V([1, 2, 3, 4 + 5*I, -2, 10])
-#print(Gaction(g, vec))
+#print(gAction(g, vec))
 
 #vec1 = V([1, 0, 3, 4])
 #vec2 = V([2, 2, 1, 0])
