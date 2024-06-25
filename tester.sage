@@ -1,36 +1,53 @@
 
 # Preliminaries
 
+# Field and general linear group
 q = 3
 K = GF(q)
-
 G = GL(2, K)
 
+# Borel subgroup
 a = K.zeta()
 MS = MatrixSpace(K, 2)
 gens = [MS([[1,1],[0,1]]),MS([[a,0],[0,1]]), MS([[1,0],[0,a]])]
 B = G.subgroup(gens)
 
-
-ct = B.character_table()
-print(ct[4])
-chi = B.character(ct[5])
-
-
-
-
 # Creating vector space for induced rep
-
 V = VectorSpace(CC, q+1)
 
 
 
+
+
+
+# Takes in character of B and returns if the induced representation is irreducible or not
+def isInducedIrreducible(chi):
+    induced_chi = chi.induct(G)
+    return induced_chi.is_irreducible()
+
+
+ct = B.character_table()
+#print(ct)
+chars = []
+IIChars = []
+for i in range(0, len(B.conjugacy_classes_representatives())):
+    if ct[i][0] == 1:
+        chars.append(B.character(ct[i]))
+        if isInducedIrreducible(B.character(ct[i])):
+            IIChars.append(B.character(ct[i]))
+chi = IIChars[0]
+
+
+
+# The chosen coset representations 
 # First q spots counting up from 0 to q-1
 # Last spot (index q) is w
 cosetReps = []
 for i in range(0, q):
     cosetReps.append(G(MS([[1,0],[i,1]])).inverse())
+    #print(cosetReps[i])
 cosetReps.append(G(MS([[0,1],[1,0]])).inverse())
+#print(cosetReps[q])
 
 
 
@@ -44,7 +61,9 @@ def toRepresentative(g):
         return G(MS([[1,0],[x,1]])).inverse()
 
 
-# Gives the G action result of group element g from G onto vector v from V - VERIFY THIS, MAKE SURE IT IS CORRECT
+# Gives the G action result of group element g from G onto vector v from V
+# Uses globally defined character chi
+# Uses globally defined vector space V
 def gAction(g, vec):
     newVec = V([0] * (q+1))
     for i in range(0, q+1):
@@ -62,17 +81,38 @@ def gAction(g, vec):
     return newVec
 
 
-# Takes naive inner product (built in dot product) and computes the averaged dot product (invariant under g action on both vectors)
+# Takes naive inner product (built in dot product) and computes the averaged product (invariant under g action on both vectors)
 def innerProduct(vec1, vec2):
     sol = 0
     for elem in G.list():
         temp = (gAction(elem, vec1)).dot_product(gAction(elem, vec2))
-        #print(elem)
-        #print(temp)
         sol = sol + temp
     sol = sol / G.order()
     return round(sol.real(), 5) + round(sol.imag(), 5) * I
 # Highly inefficient - q^6 runtime, figure out how to somehow iterate only through cosets???
+
+
+# Generates the matrix of coefficients (idk actual name of this) given element g
+def bigMatrix(g):
+    M = matrix(CC, q+1, q+1, 0)
+    for i in range(0, q+1):
+        for j in range(0, q+1):
+            vec1 = V([0]*(q+1))
+            vec2 = V([0]*(q+1))
+            vec1[i] = 1
+            vec2[j] = 1
+
+            M[i, j] = innerProduct(gAction(g, vec1), vec2)
+            print("Filled in entry in row " + str(i) + " and column " + str(j))
+    return M
+# Runs in q^8 time :(
+# WARNING - even with q=5, this function takes multiple minutes to run
+
+
+
+
+
+
 
 
 
@@ -83,45 +123,20 @@ def innerProduct(vec1, vec2):
 
 #vec1 = V([1, 0, 3, 4])
 #vec2 = V([2, 2, 1, 0])
-vec1 = V.random_element()
-vec2 = V.random_element()
-print(vec1)
-print(vec2)
-x = innerProduct(vec1, vec2)
-print(x)
+#vec1 = V.random_element()
+#vec2 = V.random_element()
+#print(vec1)
+#print(vec2)
+#x = innerProduct(vec1, vec2)
+#print(x)
+#y = innerProduct(gAction(g, vec1), gAction(g, vec2))
+#print(y)
+
+#print(g)
+#print(g.inverse())
+#print(gAction(g, vec1))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Playing with characters - clean up
-
-#ct = B.character_table()
-#print(ct)
-#chi = B.character(ct[1])
-
-#b = B.random_element()
-# b
-#print(chi(b))
-#print(b)
-
-# Iterate through character table for the 1-d reps
-
-# induced_chi = chi.induct(G)
-# induced_chi
-# induced_chi.values()
-# induced_chi(G.random_element())
-# induced_chi.is_irreducible()
-# chi.values() == chi.restrict(B).values()
+g = G.random_element()
+M = bigMatrix(g)
+print(M)
