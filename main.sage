@@ -2,7 +2,7 @@
 # Preliminaries
 
 # Field and general linear group
-q = 3
+q = 4
 K = GF(q)
 G = GL(2, K)
 
@@ -15,6 +15,27 @@ B = G.subgroup(gens)
 # Creating vector space for induced rep
 V = VectorSpace(CC, q+1)
 
+# The chosen coset representations 
+# First q spots are of the form [[1, 0][-i, 1]] (i counts up from 0 to q-1)
+# Last spot (index q) is w
+cosetReps = []
+repToIndex = {}
+index = 0
+for x in K:
+    rep = G(MS([[1,0],[-x,1]]))
+    cosetReps.append(rep)
+    repToIndex[rep] = index
+    #print(rep)
+    index = index + 1
+rep = G(MS([[0,1],[1,0]]))
+cosetReps.append(rep)
+repToIndex[rep] = q
+#print(cosetReps[q])
+
+
+
+
+
 
 
 
@@ -25,36 +46,24 @@ def isInducedIrreducible(chi):
     induced_chi = chi.induct(G)
     return induced_chi.is_irreducible()
 ct = B.character_table()
-#print(ct)
-chars = []
-IIChars = []
+print(ct)
+badChars = []
+goodChars = []
 for i in range(0, len(B.conjugacy_classes_representatives())):
     if ct[i][0] == 1:
-        chars.append(B.character(ct[i]))
         if isInducedIrreducible(B.character(ct[i])):
-            IIChars.append(B.character(ct[i]))
-chi = IIChars[0]
+            goodChars.append(B.character(ct[i]))
+        else:
+            badChars.append(B.character(ct[i]))
+chi = goodChars[0]
 print(chi.values())
+print(len(goodChars))
+print(len(badChars))
 
 
 
 
-# The chosen coset representations 
-# First q spots counting up from 0 to q-1 (not necessarily?)
-# Last spot (index q) is w
-cosetReps = []
-repToIndex = {}
-index = 0
-for x in K:
-    rep = G(MS([[1,0],[-x,1]]))
-    cosetReps.append(rep)
-    repToIndex[rep] = index
-    print(rep)
-    index = index + 1
-rep = G(MS([[0,1],[1,0]]))
-cosetReps.append(rep)
-repToIndex[rep] = q
-print(cosetReps[q])
+
 
 
 
@@ -154,6 +163,7 @@ def printMatrix(M):
 #print(y)
 
 
-g = G.random_element()
+#g = G.random_element()
+g = G([[1, 0], [0, 1]])
 M = bigMatrix(g)
 printMatrix(M)
