@@ -1,8 +1,9 @@
-
+import time
+from multiprocessing import Pool
 # Preliminaries
 
 # Field and general linear group
-q = 4
+q = 3
 K = GF(q)
 G = GL(2, K)
 
@@ -46,7 +47,7 @@ def isInducedIrreducible(chi):
     induced_chi = chi.induct(G)
     return induced_chi.is_irreducible()
 ct = B.character_table()
-print(ct)
+#print(ct)
 badChars = []
 goodChars = []
 for i in range(0, len(B.conjugacy_classes_representatives())):
@@ -84,6 +85,8 @@ def toRepresentative(g):
 def gAction(g, vec):
     newVec = V([0] * (q+1))
     for i in range(0, q+1):
+        if vec[i] == 0:
+            continue
         newRep = toRepresentative(cosetReps[i] * g.inverse())
         #print(newRep)
         b = cosetReps[i] * g.inverse() * newRep.inverse()
@@ -99,11 +102,13 @@ def gAction(g, vec):
 
 # Takes naive inner product (built in dot product) and computes the averaged product (invariant under g action on both vectors)
 def innerProduct(vec1, vec2):
-    sol = 0
-    for elem in G: # Roughly q^4 elems
-        temp = (gAction(elem, vec1)).dot_product(conjugate(gAction(elem, vec2)))
+    #sol = 0
+    #for elem in G: # Roughly q^4 elems
+        #temp = (gAction(elem, vec1)).dot_product(conjugate(gAction(elem, vec2)))
         #print(temp)
-        sol = sol + temp
+        #sol = sol + temp
+
+    sol = sum([(gAction(elem, vec1)).dot_product(conjugate(gAction(elem, vec2))) for elem in G])
     sol = sol / G.order()
     return round(sol.real(), 5) + round(sol.imag(), 5) * I
 # Highly inefficient - q^5 runtime, figure out how to somehow iterate only through cosets???
@@ -111,6 +116,22 @@ def innerProduct(vec1, vec2):
 
 # Generates the matrix of coefficients (idk actual name of this) given element g
 def bigMatrix(g):
+    start_time = time.time()
+
+    basisMatrix = matrix(CC, q+1, q+1, 0)
+    for i in range(0, q+1):
+        for j in range(i, q+1):
+            vec1 = V([0]*(q+1))
+            vec2 = V([0]*(q+1))
+            vec1[i] = 1
+            vec2[j] = 1
+
+            x = innerProduct(vec1, vec2)
+            basisMatrix[i, j] = x
+            basisMatrix[j, i] = conjugate(x)
+        print("Row " + str(i) + " of basis matrix")
+    print(basisMatrix)
+
     M = matrix(CC, q+1, q+1, 0)
     for i in range(0, q+1):
         for j in range(0, q+1):
@@ -118,12 +139,35 @@ def bigMatrix(g):
             vec2 = V([0]*(q+1))
             vec1[i] = 1
             vec2[j] = 1
+            
+            realvec1 = gAction(g, vec1)
 
-            M[i, j] = innerProduct(gAction(g, vec1), vec2)
+            M[i, j] = realvec1.dot_product(basisMatrix.column(j))
+            #M[i, j] = realvec1.dot_product(vec2)
+            #M[i, j] = innerProduct(gAction(g, vec1), vec2)
             print("Filled in entry in row " + str(i) + " and column " + str(j))
+    end_time = time.time()
+    print('bigMatrix time: %f'%(end_time - start_time))
     return M
 # Runs in q^7 time :(
 # WARNING - even with q=5, this function takes multiple minutes to run
+
+
+'''
+def oneInnerProduct(vec1, vec2):
+    return(innerProduct(gAction(g, vec1), vec2))
+
+def alt_bigMatrix(g):
+    start_time = time.time()
+    vecs = [V([0]*j+[1]+[0]*(q-j)) for j in range(q+1)]
+    veclist = [[vec1, vec2] for vec1 in vecs for vec2 in vecs]
+    with Pool() as pool:
+        M = pool.starmap(oneInnerProduct, veclist)
+    end_time = time.time()
+    sol = matrix(CC, q+1, q+1, M)
+    print('alt_bigMatrix time: %f'%(end_time - start_time))
+    return(sol)
+'''
 
 
 # Prints the matrix nicely, rounding the actual digits and displays zero as zero
@@ -153,17 +197,33 @@ def printMatrix(M):
 #print(temp)
 #vec2 = V([2, 2, 1, 0, 0])
 
-#vec1 = V.random_element()
-#vec2 = V.random_element()
-#print(vec1)
-#print(vec2)
-#x = innerProduct(vec1, vec1)
-#print(x)
+vec1 = V.random_element()
+vec2 = V.random_element()
+print(vec1)
+print(vec2)
+x = innerProduct(vec1, vec2)
+print(x)
 #y = innerProduct(gAction(g, vec1), gAction(g, vec2))
-#print(y)
+y = vec1.dot_product(conjugate(vec2))
+print(y)
 
 
 #g = G.random_element()
-g = G([[1, 0], [0, 1]])
-M = bigMatrix(g)
-printMatrix(M)
+#g = G([[1, 0], [0, 1]])
+#M = bigMatrix(g)
+#printMatrix(M)
+
+
+#g = G.random_element()
+#M = bigMatrix(g)
+#printMatrix(M)
+#M = alt_bigMatrix(g)
+#print(M)
+
+
+#vec1 = V([0]*(q+1))
+#vec1[0] = 1
+
+#for elem in G:
+    #print(elem)
+    #print(gAction(elem, vec1))
