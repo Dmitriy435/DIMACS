@@ -2,7 +2,7 @@
 # Preliminaries
 
 # Field and general linear group
-q = 4
+q = 3
 K = GF(q)
 G = GL(2, K)
 
@@ -13,7 +13,8 @@ gens = [MS([[1,1],[0,1]]),MS([[a,0],[0,1]]), MS([[1,0],[0,a]])]
 B = G.subgroup(gens)
 
 # Creating vector space for induced rep
-V = VectorSpace(CC, q+1)
+V = VectorSpace(QQbar, q+1)
+H = Hom(V, V)
 
 # The chosen coset representations 
 # First q spots are of the form [[1, 0][-i, 1]] (i counts up from 0 to q-1)
@@ -56,8 +57,8 @@ for i in range(0, len(B.conjugacy_classes_representatives())):
             goodChars.append(B.character(ct[i]))
         else:
             badChars.append(B.character(ct[i]))
-chi = goodChars[0]
-print(chi.values())
+#chi = badChars[0]
+#print(chi.values())
 
 #print(len(goodChars))
 #print(len(badChars))
@@ -80,12 +81,13 @@ def toRepresentative(g):
 # Constant time
 
 
-# Gives the G action result of group element g from G onto vector v from V
-# Uses globally defined character chi
+# Gives the G action result of group element g from G onto vector v from V, with rep induced by chi
 # Uses globally defined vector space V
-def gAction(g, vec):
+def gAction(g, vec, chi):
     newVec = V([0] * (q+1))
     for i in range(0, q+1):
+        if vec[i] == 0:
+            continue
         newRep = toRepresentative(cosetReps[i] * g.inverse())
         #print(newRep)
         b = cosetReps[i] * g.inverse() * newRep.inverse()
@@ -113,67 +115,93 @@ def printMatrix(M):
 
 
 
-# PLAN:
-# Take some g
-# Compute it as matrix
-# find eigenspaces
-# take second g
-# repeat process until only one eigenspace left
 
-g = G.random_element()
-#g = G([[1, 0], [0, 1]])
 
-V = VectorSpace(QQbar, q+1)
-H = Hom(V, V)
-
-print(H)
-#print(H.domain())
-#print(H.domain().basis())
-
-'''
-for g in G:
-    img = [gAction(g, V([0]*j+[1]+[0]*(q-j))) for j in range(q+1)]
+# Finds eigenSpaces of particular g given the character chi for which this representations is induced
+def eigenSpaces(g, chi):
+    img = [gAction(g, V([0]*j+[1]+[0]*(q-j)), chi) for j in range(q+1)]
     f = H(img)
     M = f.matrix()
-    printMatrix(M)
-'''
-
-
-
-
-def eigenVectors(g):
-    img = [gAction(g, V([0]*j+[1]+[0]*(q-j))) for j in range(q+1)]
-    f = H(img)
-    M = f.matrix()
-    eigenVecs = M.eigenvectors_left()
+    eigenVecs = M.eigenspaces_left()
     return eigenVecs
 
+'''
+g = G.random_element()
+print(eigenSpaces(g)[0])
+print(type(eigenSpaces(g)[0]))
+print(type(eigenSpaces(g)[0][1]))
+'''
 
 
+
+
+# Given character of B chi, finds the 1d (if exists) G-invariant subspace of the induced representation
+def findGsubspace(chi):
+    memorySet = set()
+    g = G.random_element()
+    spaces = eigenSpaces(g, chi)
+    for t in spaces:
+        #print(t[1])
+        memorySet.add(t[1])
+    #print(memorySet)
+
+    for g in G:
+        spaces = eigenSpaces(g, chi)
+        gSet = set()
+        for t in spaces:
+            gSet.add(t[1])
+
+        tempSet = set()
+        for ogSpace in memorySet:
+            for newSpace in gSet:
+                t = ogSpace.intersection(newSpace)
+                tempSet.add(t)
+        print(tempSet)
+        memorySet = tempSet
+
+    print("This is the final answer:")
+    print(memorySet) 
+
+
+findGsubspace(goodChars[0])
+
+
+
+
+'''
 memorySet = set()
 g = G.random_element()
-temp = eigenVectors(g)
-for item in temp:
-    memorySet.update(item[1])
-memory = V.subspace([V(x) for x in memorySet])
-print(memory)
+print(g)
+spaces = eigenSpaces(g)
+for t in spaces:
+    print(t[1])
+    memorySet.add(t[1])
+print(memorySet)
 
-count = 0
+
+#count = 0
 for g in G:
-    temp = eigenVectors(g)
+    spaces = eigenSpaces(g)
+    gSet = set()
+    for t in spaces:
+        gSet.add(t[1])
+
     tempSet = set()
-    for item in temp:
-        tempSet.update(item[1])
-    tempVS = V.subspace([V(x) for x in tempSet])
-    if count < 6:
-        print("This is tempSet:")
-        print(tempSet)
-        print(tempVS)
-    memory = memory.intersection(tempVS)
-    print(memory)
+    for ogSpace in memorySet:
+        for newSpace in gSet:
+            t = ogSpace.intersection(newSpace)
+            tempSet.add(t)
+    
+    if count < 8:
+        print("This is gSet:")
+        print(gSet)
+        print(memorySet)
     count = count + 1
+    
 
-print(memory)
+    #print(tempSet)
+    memorySet = tempSet
 
-
-# THIS DOESNT WORK AT ALL, NEED TO INTERSECT EIGENSPACES!!!
+print("This is the final answer:")
+print(memorySet)
+'''
