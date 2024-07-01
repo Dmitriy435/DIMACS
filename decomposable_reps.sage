@@ -115,7 +115,7 @@ def printMatrix(M):
 
 # Finds eigenSpaces of particular g given the character chi for which this representations is induced
 def eigenSpaces(g, chi):
-    img = [gAction(g, V([0]*j+[1]+[0]*(q-j)), chi) for j in range(q+1)]
+    img = [gAction(g, basisVec, chi) for basisVec in V.basis()]
     f = H(img)
     M = f.matrix()
     eigenSpaces = M.eigenspaces_left()
@@ -133,6 +133,9 @@ def findGsubspace(chi):
     #print(memorySet)
 
     for g in G:
+        if len(memorySet) == 1 and list(memorySet)[0].dimension() == 0:
+            break
+
         spaces = eigenSpaces(g, chi)
         gSet = set()
         for t in spaces:
@@ -153,9 +156,33 @@ def findGsubspace(chi):
         for item in memorySet:
             if item.dimension()==1:
                 print(item)
+                return item
+# Runs pretty slowly when bad character - any way to speed this up?
 
-
+'''
 for chi in goodChars:
     findGsubspace(chi)
 for chi in badChars:
     findGsubspace(chi)
+'''
+
+
+
+
+
+
+
+chi = badChars[0]
+W = findGsubspace(chi)
+V2 = V / W
+print(V2)
+liftMap = V2.lift_map()
+quotientMap = V2.quotient_map()
+
+print(liftMap.image()) # This is the space we want to be working over!
+vec = liftMap(V2([5, 1, -2]))
+print(vec)
+g = G([[1, 2], [2, 2]])
+print(g)
+print(gAction(g, vec, chi))
+print(liftMap(quotientMap(gAction(g, vec, chi)))) # How we compute gAction on this space!
