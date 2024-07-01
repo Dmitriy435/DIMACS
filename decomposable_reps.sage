@@ -1,4 +1,3 @@
-
 # Preliminaries
 
 # Field and general linear group
@@ -43,12 +42,12 @@ repToIndex[rep] = q
 
 
 # Takes in character of B and returns if the induced representation is irreducible or not
-
 def isInducedIrreducible(chi):
     induced_chi = chi.induct(G)
     return induced_chi.is_irreducible()
+
+# Producing the lists of good characters and bad characters
 ct = B.character_table()
-#print(ct)
 badChars = []
 goodChars = []
 for i in range(0, len(B.conjugacy_classes_representatives())):
@@ -57,11 +56,8 @@ for i in range(0, len(B.conjugacy_classes_representatives())):
             goodChars.append(B.character(ct[i]))
         else:
             badChars.append(B.character(ct[i]))
-#chi = badChars[0]
-#print(chi.values())
-
-#print(len(goodChars))
-#print(len(badChars))
+print(len(goodChars))
+print(len(badChars))
 
 # NOTICE - the induced reps of the goodChars are each counted twice, as two diff chars map to the same induced rep
 
@@ -122,17 +118,8 @@ def eigenSpaces(g, chi):
     img = [gAction(g, V([0]*j+[1]+[0]*(q-j)), chi) for j in range(q+1)]
     f = H(img)
     M = f.matrix()
-    eigenVecs = M.eigenspaces_left()
-    return eigenVecs
-
-'''
-g = G.random_element()
-print(eigenSpaces(g)[0])
-print(type(eigenSpaces(g)[0]))
-print(type(eigenSpaces(g)[0][1]))
-'''
-
-
+    eigenSpaces = M.eigenspaces_left()
+    return eigenSpaces
 
 
 # Given character of B chi, finds the 1d (if exists) G-invariant subspace of the induced representation
@@ -156,52 +143,19 @@ def findGsubspace(chi):
             for newSpace in gSet:
                 t = ogSpace.intersection(newSpace)
                 tempSet.add(t)
-        print(tempSet)
+        #print(tempSet)
         memorySet = tempSet
 
-    print("This is the final answer:")
-    print(memorySet) 
+    if len(memorySet) == 1:
+        print("This was a good character! No G-invariant subspace!")
+    else:
+        print("This is the 1d G-invariant subspace:")
+        for item in memorySet:
+            if item.dimension()==1:
+                print(item)
 
 
-findGsubspace(goodChars[0])
-
-
-
-
-'''
-memorySet = set()
-g = G.random_element()
-print(g)
-spaces = eigenSpaces(g)
-for t in spaces:
-    print(t[1])
-    memorySet.add(t[1])
-print(memorySet)
-
-
-#count = 0
-for g in G:
-    spaces = eigenSpaces(g)
-    gSet = set()
-    for t in spaces:
-        gSet.add(t[1])
-
-    tempSet = set()
-    for ogSpace in memorySet:
-        for newSpace in gSet:
-            t = ogSpace.intersection(newSpace)
-            tempSet.add(t)
-    
-    if count < 8:
-        print("This is gSet:")
-        print(gSet)
-        print(memorySet)
-    count = count + 1
-    
-
-    #print(tempSet)
-    memorySet = tempSet
-
-print("This is the final answer:")
-print(memorySet)
-'''
+for chi in goodChars:
+    findGsubspace(chi)
+for chi in badChars:
+    findGsubspace(chi)
