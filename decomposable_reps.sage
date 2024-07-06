@@ -1,3 +1,5 @@
+import numpy as np
+
 # Preliminaries
 
 # Field and general linear group
@@ -136,6 +138,15 @@ def findGsubspace(chi):
         if len(memorySet) == 1 and list(memorySet)[0].dimension() == 0:
             break
 
+        # ONLY FOR DEALING WITH BAD CHARACTERS!!! MAY CAUSE ERRORS WHEN TESTING THIS ON THE GOOD CHARACTERS!!!
+        if len(memorySet) == 2:
+            l = []
+            for x in memorySet:
+                l.append(x.dimension())
+            if l == [0, 1] or l == [1, 0]:
+                break
+        # Although reduces accuracy, the speed is improved 100 fold
+
         spaces = eigenSpaces(g, chi)
         gSet = set()
         for t in spaces:
@@ -158,6 +169,7 @@ def findGsubspace(chi):
                 print(item)
                 return item
 # Runs pretty slowly when bad character - any way to speed this up?
+# Could start checking if only 1d subspace left, then just simply check if this remains to be eigenvector for remainding elems
 
 '''
 for chi in goodChars:
@@ -168,16 +180,16 @@ for chi in badChars:
 
 
 
-
-
-
-
-chi = badChars[0]
+'''
+chi = badChars[1]
+print(chi.values())
 W = findGsubspace(chi)
 V2 = V / W
 print(V2)
 liftMap = V2.lift_map()
 quotientMap = V2.quotient_map()
+
+print("")
 
 print(liftMap.image()) # This is the space we want to be working over!
 vec = liftMap(V2([5, 1, -2]))
@@ -186,3 +198,16 @@ g = G([[1, 2], [2, 2]])
 print(g)
 print(gAction(g, vec, chi))
 print(liftMap(quotientMap(gAction(g, vec, chi)))) # How we compute gAction on this space!
+'''
+
+
+'''
+vec = W.basis()[0]
+print(vec)
+
+s = set()
+for g in G:
+    x = tuple(gAction(g, vec, chi))
+    s.add(x)
+print(s)
+'''
