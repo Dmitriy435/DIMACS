@@ -144,14 +144,14 @@ def findGsubspace(chi):
         if len(memorySet) == _sage_const_1  and list(memorySet)[_sage_const_0 ].dimension() == _sage_const_0 :
             break
 
-        # ONLY FOR DEALING WITH BAD CHARACTERS!!!
+        # ONLY FOR DEALING WITH BAD CHARACTERS!!! MAY CAUSE ERRORS WHEN TESTING THIS ON THE GOOD CHARACTERS!!!
         if len(memorySet) == _sage_const_2 :
             l = []
             for x in memorySet:
                 l.append(x.dimension())
             if l == [_sage_const_0 , _sage_const_1 ] or l == [_sage_const_1 , _sage_const_0 ]:
                 break
-
+        # Although reduces accuracy, the speed is improved 100 fold
 
         spaces = eigenSpaces(g, chi)
         gSet = set()
@@ -177,12 +177,12 @@ def findGsubspace(chi):
 # Runs pretty slowly when bad character - any way to speed this up?
 # Could start checking if only 1d subspace left, then just simply check if this remains to be eigenvector for remainding elems
 
-
+'''
 for chi in goodChars:
     findGsubspace(chi)
 for chi in badChars:
     findGsubspace(chi)
-
+'''
 
 
 
@@ -207,7 +207,6 @@ print(liftMap(quotientMap(gAction(g, vec, chi)))) # How we compute gAction on th
 '''
 
 
-
 '''
 vec = W.basis()[0]
 print(vec)
@@ -218,4 +217,19 @@ for g in G:
     s.add(x)
 print(s)
 '''
+
+
+
+g = G(MS([[_sage_const_1 , _sage_const_2 ], [_sage_const_1 , _sage_const_1 ]]))
+print(g)
+
+chi = badChars[_sage_const_1 ]
+img = [gAction(g, basisVec, chi) for basisVec in V.basis()]
+f = H(img)
+M = f.matrix()
+print(M.base_ring())
+
+#printMatrix(M)
+x = M.jordan_form(transformation=True)
+print(x)
 

@@ -211,3 +211,18 @@ for g in G:
     s.add(x)
 print(s)
 '''
+
+
+
+g = G(MS([[1, 2], [1, 1]]))
+print(g)
+
+chi = badChars[1]
+img = [gAction(g, basisVec, chi) for basisVec in V.basis()]
+f = H(img)
+M = f.matrix()
+print(M.base_ring())
+
+#printMatrix(M)
+x = M.jordan_form(transformation=True)
+print(x)
