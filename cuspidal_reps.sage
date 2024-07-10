@@ -15,6 +15,22 @@ B = G.subgroup(gens)
 gens = [MS([[1,x],[0,1]]) for x in K]
 U = G.subgroup(gens)
 
+
+# L* inclusion into G
+# NOTICE DEPENDS ON CHOICE OF NON SQUARE D!!!
+
+# Write function to determine d - use Legendre symbols!!!!!!!!!!!!! - this only works for certain cases when q=p
+d = -1 #q=3
+#d = 3 #q=5
+
+gens = []
+for x in K:
+    for y in K:
+        gens.append(MS([[x,d*y],[y,x]]))
+gens.remove(MS([[0,0],[0,0]]))
+L = G.subgroup(gens)
+
+
 # Creating vector space for induced rep
 dim = (q+1) * (q-1)^2
 V = VectorSpace(QQbar, dim)
@@ -47,16 +63,28 @@ for gRep in cosetRepsB:
         cosetReps.append(rep)
         repToIndex[rep] = index
         index = index + 1
-print(cosetReps)
-print(len(cosetReps))
+#print(cosetReps)
+#print(len(cosetReps))
+
+'''
+gens = []
+for u in U:
+    for g in cosetReps:
+        gens.append(u * g)
+print(type(gens[0]))
+G2 = MatrixGroup(gens)
+
+print(type(list(G2)[0]))
+print(type(list(G)[0]))
+print(list(G2) == list(G))
+'''
 
 
 
 
 
 
-
-
+# Base character of U
 
 ct = U.character_table()
 #print(ct)
@@ -71,13 +99,67 @@ print(chi.values())
 
 
 
+# Characters of L* - correspond to cuspidal reps
+
+ct2 = L.character_table()
+
+#print(L.order())
+#print(ct2)
 
 
-# NEED TO CHANGE THIS!!!
+
+
+
+# Finds non decomposable characters of L*
+
+
+# Takes a in L, and gives back conjugate
+def conjugateInL(a):
+    m = copy(a.matrix())
+    m[0, 1] = -m[0, 1]
+    m[1, 0] = -m[1, 0]
+    return G(m)
+
+charsOfL = []
+for i in range(0, len(L.conjugacy_classes_representatives())):
+    if ct2[i][0] == 1:
+        charsOfL.append(L.character(ct2[i]))
+
+nondecomposableChars = []
+for char in charsOfL:
+    decomposable = True
+    for x in L:
+        if char(x) != char(conjugateInL(x)):
+            decomposable = False
+            break
+    if not decomposable:
+        nondecomposableChars.append(char)
+
+#print("These are nondecomp chars: ")
+#for x in nondecomposableChars:
+#    print(x.values())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# REALLY check that this is correct, could be messing everything up so far!!!!
+
 
 # Takes in element g from G and returns the corresponding representative in U\G
 def toRepresentative(g):
-    gRep = -1
+    gRep = -1 # This is g_sigma inverse!
     if g.inverse().matrix()[0][0] == 0:
         gRep = G(MS([[0,1],[1,0]]))
     else:
@@ -87,11 +169,10 @@ def toRepresentative(g):
     if gRep == -1:
         print("AHHHHHHHH")
 
-    b = gRep.inverse() * g.inverse()
-    d = G(MS([[b.matrix()[0][0], 0], [0, b.matrix()[1][1]]]))
+    b = g * gRep
+    d = G(MS([[b.inverse().matrix()[0][0], 0], [0, b.inverse().matrix()[1][1]]])).inverse()
 
-    u = gRep * d
-    return u.inverse()
+    return d * gRep.inverse()
 # Constant time
 
 
@@ -106,6 +187,8 @@ def gAction(g, vec):
         newRep = toRepresentative(cosetReps[i] * g.inverse())
         #print(newRep)
         u = cosetReps[i] * g.inverse() * newRep.inverse()
+
+        #print(u)
         
         newIndex = repToIndex[newRep]
 
@@ -129,79 +212,15 @@ def printMatrix(M):
         print("]")
 # Should automate length of mx
 
-# Finds eigenSpaces of particular g given the character chi for which this representations is induced
-def eigenVectors(g):
-    img = [gAction(g, basisVec) for basisVec in V.basis()]
-    f = H(img)
-    M = f.matrix()
-    eigenSpaces = M.eigenvectors_left()
-    return eigenSpaces
 
-# Goes through eigenvectors, chooses q-1, 1, and q+1 of them to form a set of spaces
-def findInvariantSubspacesH(g):
 
-    # List of eigenvectors:
-    temp = eigenVectors(g)
-    listVecs = []
-    for t in temp:
-        listVecs = listVecs + t[1]
-    #print(len(listVecs))
 
-    sol = set()
 
-    # q-1:
-    s = Subsets(listVecs, q-1)
-    #print(s.cardinality())
-    for gens in s:
-        v = V.subspace(gens)
-        sol.add(v)
 
-    # q:
-    s = Subsets(listVecs, q)
-    #print(s.cardinality())
-    for gens in s:
-        v = V.subspace(gens)
-        sol.add(v)
 
-    # q+1:
-    s = Subsets(listVecs, q+1)
-    #print(s.cardinality())
-    for gens in s:
-        v = V.subspace(gens)
-        sol.add(v)
 
-    return sol
-# Very not efficient
 
-# Iterates through all g, finds all invariant subspaces, and finds intersections
-def findInvariantSubspaces():
-    memorySet = set()
-    g = G.random_element()
-    s = findInvariantSubspacesH(g)
-    memorySet.update(s)
 
-    for elem in G:
-        print("Looking at element:")
-        print(elem)
-        print("Currently memorySet has " + str(len(memorySet)) + " elements")
-        if len(memorySet) == q - 1 + (q^2 - q + q^2 - 3*q + 2) / 2:
-            break
-        
-        s = findInvariantSubspacesH(elem)
-
-        tempSet = set()
-        for ogSpace in memorySet:
-            for newSpace in s:
-                t = ogSpace.intersection(newSpace)
-
-                if t.dimension() == q-1 or t.dimension() == q or t.dimension() == q+1:
-                    tempSet.add(t)
-        #print(tempSet)
-        memorySet = tempSet
-        
-    print(memorySet)
-# Stupidly ineffient
-# THIS DOES NOT WORK!!!
 
 
 
@@ -223,10 +242,72 @@ print(gAction(g, vec))
 
 
 
+nu = nondecomposableChars[0]
+print(nu.values())
+print("")
 
-g = G(MS([[1, 2], [1, 1]]))
+vec = V([0] * dim)
+vec[0] = 1
+#vec[4] = 1
+#vec[8] = 1
+#vec[12] = 1
+
+
+'''
+g = G.random_element()
 print(g)
+vec2 = gAction(g, vec)
+print(vec2)
+vec3 = gAction(g, vec2)
+print(vec3)
+vec4 = gAction(g, vec3)
+print(vec4)
 
-#print(eigenVectors(g))
+vec = vec + vec2 + vec3 + vec4
+'''
 
-findInvariantSubspaces()
+'''
+for delta in K:
+    if delta != 0:
+        g = G(MS([[delta, 0], [0, delta]]))
+        vec2 = gAction(g, vec)
+        print(vec2)
+'''
+
+
+
+
+
+for delta in K:
+    if delta != 0:
+        g = G(MS([[delta, 0], [0, delta]]))
+        vec2 = gAction(g, vec)
+        vec = vec + (1 / nu(g)) * vec2
+vec = vec / (q-1)
+
+
+g = G(MS([[2, 0], [0, 2]]))
+print("These should be the same: ")
+print(gAction(g, vec))
+print(nu(g) * vec)
+print(gAction(g, vec) == nu(g) * vec)
+
+
+
+
+print("Now testing the subgroup generated by this vector: ")
+
+gens = [gAction(g, vec) for g in G]
+#for x in gens:
+#    print(x)
+#    print("")
+W = V.subspace(gens)
+print(W)
+
+
+
+
+
+#for i in range(0, dim):
+#    if v2[i] != 0:
+#        print(cosetReps[i])

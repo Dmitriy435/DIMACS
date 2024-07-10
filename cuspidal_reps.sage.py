@@ -20,6 +20,22 @@ B = G.subgroup(gens)
 gens = [MS([[_sage_const_1 ,x],[_sage_const_0 ,_sage_const_1 ]]) for x in K]
 U = G.subgroup(gens)
 
+
+# L* inclusion into G
+# NOTICE DEPENDS ON CHOICE OF NON SQUARE D!!!
+
+# Write function to determine d - use Legendre symbols!!!!!!!!!!!!! - this only works for certain cases when q=p
+d = -_sage_const_1  #q=3
+#d = 3 #q=5
+
+gens = []
+for x in K:
+    for y in K:
+        gens.append(MS([[x,d*y],[y,x]]))
+gens.remove(MS([[_sage_const_0 ,_sage_const_0 ],[_sage_const_0 ,_sage_const_0 ]]))
+L = G.subgroup(gens)
+
+
 # Creating vector space for induced rep
 dim = (q+_sage_const_1 ) * (q-_sage_const_1 )**_sage_const_2 
 V = VectorSpace(QQbar, dim)
@@ -52,16 +68,28 @@ for gRep in cosetRepsB:
         cosetReps.append(rep)
         repToIndex[rep] = index
         index = index + _sage_const_1 
-print(cosetReps)
-print(len(cosetReps))
+#print(cosetReps)
+#print(len(cosetReps))
+
+'''
+gens = []
+for u in U:
+    for g in cosetReps:
+        gens.append(u * g)
+print(type(gens[0]))
+G2 = MatrixGroup(gens)
+
+print(type(list(G2)[0]))
+print(type(list(G)[0]))
+print(list(G2) == list(G))
+'''
 
 
 
 
 
 
-
-
+# Base character of U
 
 ct = U.character_table()
 #print(ct)
@@ -76,13 +104,67 @@ print(chi.values())
 
 
 
+# Characters of L* - correspond to cuspidal reps
+
+ct2 = L.character_table()
+
+#print(L.order())
+#print(ct2)
 
 
-# NEED TO CHANGE THIS!!!
+
+
+
+# Finds non decomposable characters of L*
+
+
+# Takes a in L, and gives back conjugate
+def conjugateInL(a):
+    m = copy(a.matrix())
+    m[_sage_const_0 , _sage_const_1 ] = -m[_sage_const_0 , _sage_const_1 ]
+    m[_sage_const_1 , _sage_const_0 ] = -m[_sage_const_1 , _sage_const_0 ]
+    return G(m)
+
+charsOfL = []
+for i in range(_sage_const_0 , len(L.conjugacy_classes_representatives())):
+    if ct2[i][_sage_const_0 ] == _sage_const_1 :
+        charsOfL.append(L.character(ct2[i]))
+
+nondecomposableChars = []
+for char in charsOfL:
+    decomposable = True
+    for x in L:
+        if char(x) != char(conjugateInL(x)):
+            decomposable = False
+            break
+    if not decomposable:
+        nondecomposableChars.append(char)
+
+#print("These are nondecomp chars: ")
+#for x in nondecomposableChars:
+#    print(x.values())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# REALLY check that this is correct, could be messing everything up so far!!!!
+
 
 # Takes in element g from G and returns the corresponding representative in U\G
 def toRepresentative(g):
-    gRep = -_sage_const_1 
+    gRep = -_sage_const_1  # This is g_sigma inverse!
     if g.inverse().matrix()[_sage_const_0 ][_sage_const_0 ] == _sage_const_0 :
         gRep = G(MS([[_sage_const_0 ,_sage_const_1 ],[_sage_const_1 ,_sage_const_0 ]]))
     else:
@@ -92,11 +174,10 @@ def toRepresentative(g):
     if gRep == -_sage_const_1 :
         print("AHHHHHHHH")
 
-    b = gRep.inverse() * g.inverse()
-    d = G(MS([[b.matrix()[_sage_const_0 ][_sage_const_0 ], _sage_const_0 ], [_sage_const_0 , b.matrix()[_sage_const_1 ][_sage_const_1 ]]]))
+    b = g * gRep
+    d = G(MS([[b.inverse().matrix()[_sage_const_0 ][_sage_const_0 ], _sage_const_0 ], [_sage_const_0 , b.inverse().matrix()[_sage_const_1 ][_sage_const_1 ]]])).inverse()
 
-    u = gRep * d
-    return u.inverse()
+    return d * gRep.inverse()
 # Constant time
 
 
@@ -111,6 +192,8 @@ def gAction(g, vec):
         newRep = toRepresentative(cosetReps[i] * g.inverse())
         #print(newRep)
         u = cosetReps[i] * g.inverse() * newRep.inverse()
+
+        #print(u)
         
         newIndex = repToIndex[newRep]
 
@@ -134,78 +217,15 @@ def printMatrix(M):
         print("]")
 # Should automate length of mx
 
-# Finds eigenSpaces of particular g given the character chi for which this representations is induced
-def eigenVectors(g):
-    img = [gAction(g, basisVec) for basisVec in V.basis()]
-    f = H(img)
-    M = f.matrix()
-    eigenSpaces = M.eigenvectors_left()
-    return eigenSpaces
 
-# Goes through eigenvectors, chooses q-1, 1, and q+1 of them to form a set of spaces
-def findInvariantSubspacesH(g):
 
-    # List of eigenvectors:
-    temp = eigenVectors(g)
-    listVecs = []
-    for t in temp:
-        listVecs = listVecs + t[_sage_const_1 ]
-    #print(len(listVecs))
 
-    sol = set()
 
-    # q-1:
-    s = Subsets(listVecs, q-_sage_const_1 )
-    #print(s.cardinality())
-    for gens in s:
-        v = V.subspace(gens)
-        sol.add(v)
 
-    # q:
-    s = Subsets(listVecs, q)
-    #print(s.cardinality())
-    for gens in s:
-        v = V.subspace(gens)
-        sol.add(v)
 
-    # q+1:
-    s = Subsets(listVecs, q+_sage_const_1 )
-    #print(s.cardinality())
-    for gens in s:
-        v = V.subspace(gens)
-        sol.add(v)
 
-    return sol
-# Very not efficient
 
-# Iterates through all g, finds all invariant subspaces, and finds intersections
-def findInvariantSubspaces():
-    memorySet = set()
-    g = G.random_element()
-    s = findInvariantSubspacesH(g)
-    memorySet.update(s)
 
-    for elem in G:
-        print("Looking at element:")
-        print(elem)
-        print("Currently memorySet has " + str(len(memorySet)) + " elements")
-        if len(memorySet) == q - _sage_const_1  + (q**_sage_const_2  - q + q**_sage_const_2  - _sage_const_3 *q + _sage_const_2 ) / _sage_const_2 :
-            break
-        
-        s = findInvariantSubspacesH(elem)
-
-        tempSet = set()
-        for ogSpace in memorySet:
-            for newSpace in s:
-                t = ogSpace.intersection(newSpace)
-
-                if t.dimension() == q-_sage_const_1  or t.dimension() == q or t.dimension() == q+_sage_const_1 :
-                    tempSet.add(t)
-        #print(tempSet)
-        memorySet = tempSet
-        
-    print(memorySet)
-# Stupidly ineffient
 
 
 
@@ -227,11 +247,76 @@ print(gAction(g, vec))
 
 
 
+nu = nondecomposableChars[_sage_const_0 ]
+print(nu.values())
+print("")
 
-g = G(MS([[_sage_const_1 , _sage_const_2 ], [_sage_const_1 , _sage_const_1 ]]))
+vec = V([_sage_const_0 ] * dim)
+vec[_sage_const_0 ] = _sage_const_1 
+#vec[4] = 1
+#vec[8] = 1
+#vec[12] = 1
+
+
+'''
+g = G.random_element()
 print(g)
+vec2 = gAction(g, vec)
+print(vec2)
+vec3 = gAction(g, vec2)
+print(vec3)
+vec4 = gAction(g, vec3)
+print(vec4)
 
-#print(eigenVectors(g))
+vec = vec + vec2 + vec3 + vec4
+'''
 
-findInvariantSubspaces()
+'''
+for delta in K:
+    if delta != 0:
+        g = G(MS([[delta, 0], [0, delta]]))
+        vec2 = gAction(g, vec)
+        print(vec2)
+'''
+
+
+
+
+
+for delta in K:
+    if delta != _sage_const_0 :
+        g = G(MS([[delta, _sage_const_0 ], [_sage_const_0 , delta]]))
+        vec2 = gAction(g, vec)
+        vec = vec + (_sage_const_1  / nu(g)) * vec2
+vec = vec / (q-_sage_const_1 )
+
+
+g = G(MS([[_sage_const_2 , _sage_const_0 ], [_sage_const_0 , _sage_const_2 ]]))
+print("These should be the same: ")
+print(gAction(g, vec))
+print(nu(g) * vec)
+print(gAction(g, vec) == nu(g) * vec)
+
+
+
+
+print("Now testing the subgroup generated by this vector: ")
+
+gens = [gAction(g, vec) for g in G]
+#for x in gens:
+#    print(x)
+#    print("")
+W = V.subspace(gens)
+print(W)
+
+# need to get rid of q+1 symmetry somehow - think smartly here, probably smth to do with how cuspidal acts on B
+
+
+
+
+
+
+#for i in range(0, dim):
+#    if v2[i] != 0:
+#        print(cosetReps[i])
 

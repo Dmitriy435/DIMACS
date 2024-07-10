@@ -8,7 +8,7 @@ K = GF(q)
 G = GL(2, K)
 
 # Borel subgroup
-a = K.zeta()
+a = K.zeta() #Generator of K*
 MS = MatrixSpace(K, 2)
 gens = [MS([[1,1],[0,1]]),MS([[a,0],[0,1]]), MS([[1,0],[0,a]])]
 B = G.subgroup(gens)
@@ -180,7 +180,7 @@ for chi in badChars:
 
 
 
-'''
+
 chi = badChars[1]
 print(chi.values())
 W = findGsubspace(chi)
@@ -198,7 +198,7 @@ g = G([[1, 2], [2, 2]])
 print(g)
 print(gAction(g, vec, chi))
 print(liftMap(quotientMap(gAction(g, vec, chi)))) # How we compute gAction on this space!
-'''
+
 
 
 '''
@@ -211,18 +211,3 @@ for g in G:
     s.add(x)
 print(s)
 '''
-
-
-
-g = G(MS([[1, 2], [1, 1]]))
-print(g)
-
-chi = badChars[1]
-img = [gAction(g, basisVec, chi) for basisVec in V.basis()]
-f = H(img)
-M = f.matrix()
-print(M.base_ring())
-
-#printMatrix(M)
-x = M.jordan_form(transformation=True)
-print(x)
