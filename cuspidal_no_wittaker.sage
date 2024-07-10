@@ -19,8 +19,7 @@ U = G.subgroup(gens)
 # Creating vector space
 dim = q-1
 V = VectorSpace(QQbar, dim)
-#H = Hom(V, V)
-# This vector space of functions K^x to C, basis is fns that take value of 1 on one element and zero elsewehere
+#This vector space of functions K^x to C, basis is fns that take value of 1 on one element and zero elsewehere
 
 
 
@@ -45,6 +44,8 @@ def psi(x):
 
 
 
+
+
 # Getting nondecomp characters of L^x
 H = Hom(K, L)
 inclusionMap = H[0]
@@ -58,20 +59,17 @@ ct2 = Lx.character_table()
 def conjugateOfL(l):
     return l^q
 
-charsOfL = []
+nondecomposableChars = []
 for i in range(0, len(Lx.conjugacy_classes_representatives())):
     if ct2[i][0] == 1:
-        charsOfL.append(Lx.character(ct2[i]))
-
-nondecomposableChars = []
-for char in charsOfL:
-    decomposable = True
-    for x in Lx:
-        if char(x) != char(conjugateOfL(x)):
-            decomposable = False
-            break
-    if not decomposable:
-        nondecomposableChars.append(char)
+        char = Lx.character(ct2[i])
+        decomposable = True
+        for x in Lx:
+            if char(x) != char(conjugateOfL(x)):
+                decomposable = False
+                break
+        if not decomposable:
+            nondecomposableChars.append(char)
 
 
 # NEED TO REMOVE CONJUAGETS!
@@ -137,7 +135,7 @@ def gAction(g, vec):
                 newVec[j] = coeff(y, oldRep, g) * vec[i]
         
         return newVec
-# Shouldn't be too bad efficiency wise?
+# Fast
 
 
 # Helper function for gAction - calculates the coefficients when g is not in B
@@ -154,7 +152,7 @@ def coeff(y, x, g):
             temp = temp + nu(u) * psi(- (x / c) * (u + conjugateOfL(u)))
     
     return temp * psi((a * y + d * x) / c) / q
-# Pretty fast
+# Fast as well
 
 
 

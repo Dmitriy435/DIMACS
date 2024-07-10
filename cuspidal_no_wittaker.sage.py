@@ -63,20 +63,23 @@ ct2 = Lx.character_table()
 def conjugateOfL(l):
     return l**q
 
-charsOfL = []
+nondecomposableChars = []
 for i in range(_sage_const_0 , len(Lx.conjugacy_classes_representatives())):
     if ct2[i][_sage_const_0 ] == _sage_const_1 :
-        charsOfL.append(Lx.character(ct2[i]))
+        char = Lx.character(ct2[i])
+        decomposable = True
+        for x in Lx:
+            if char(x) != char(conjugateOfL(x)):
+                decomposable = False
+                break
+        if not decomposable:
+            nondecomposableChars.append(char)
 
-nondecomposableChars = []
-for char in charsOfL:
-    decomposable = True
-    for x in Lx:
-        if char(x) != char(conjugateOfL(x)):
-            decomposable = False
-            break
-    if not decomposable:
-        nondecomposableChars.append(char)
+
+# NEED TO REMOVE CONJUAGETS!
+# Currently double counting the cuspidal reps
+
+
 
 print("This is the non-decomposable character of L^x we are using: ")
 print(nondecomposableChars[_sage_const_0 ].values())
