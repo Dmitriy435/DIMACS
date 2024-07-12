@@ -4,7 +4,7 @@
 
 
 # Field and general linear group
-q = 3
+q = 5
 K = GF(q)
 G = GL(2, K)
 MS = MatrixSpace(K, 2)
@@ -290,6 +290,7 @@ def findGsubspace(chi):
 
 
 # HOW TO FIND Q DIMENSIONAL SPACE?????????
+# THIS IS A PROBLEM!!!
 
 chi = badCharsB[1]
 findGsubspace(chi)
@@ -306,3 +307,42 @@ vec3[2] = 1
 print(gActionInduced(g, vec1, chi))
 print(gActionInduced(g, vec2, chi))
 print(gActionInduced(g, vec3, chi))
+
+
+
+
+
+
+# Matrix coeff of cuspidal
+def matrixCoeffCuspidal(g, vec1, vec2, nondecompChar):
+    v = gActionCuspidal(g, vec1, nondecompChar)
+    return v.dot_product(conjugate(vec2))
+
+# Matrix coeff of Induced (no matter what irrep in particular)
+def matrixCoeffInduced(g, vec1, vec2, chi):
+    v = gActionInduced(g, vec1, chi)
+    return v.dot_product(conjugate(vec2))
+# Do actual sum manually
+
+
+
+
+def tripleProduct(g):
+    cusp = nondecomposableChars[0]
+    induced1 = goodCharsB[0]
+    induced2 = badCharsB[0]
+
+    Vtiny = findGsubspace(induced2)
+
+    one = matrixCoeffCuspidal(g, Vsmall.random_element(), Vsmall.random_element(), cusp)
+    two = matrixCoeffInduced(g, Vbig.random_element(), Vbig.random_element(), induced1)
+    three = matrixCoeffInduced(g, Vtiny.random_element(), Vtiny.random_element(), induced2)
+
+    return one * two * three
+
+
+print("")
+g = G.random_element()
+print(g)
+
+print(tripleProduct(g))
