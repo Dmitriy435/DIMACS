@@ -3,7 +3,7 @@ import numpy as np
 # Preliminaries
 
 # Field and general linear group
-q = 3
+q = 5
 K = GF(q)
 G = GL(2, K)
 
@@ -184,12 +184,15 @@ for chi in badChars:
 chi = badChars[1]
 print(chi.values())
 W = findGsubspace(chi)
+
+'''
 V2 = V / W
 print(V2)
 liftMap = V2.lift_map()
 quotientMap = V2.quotient_map()
 
 print("")
+
 
 print(liftMap.image()) # This is the space we want to be working over!
 vec = liftMap(V2([5, 1, -2]))
@@ -198,7 +201,7 @@ g = G([[1, 2], [2, 2]])
 print(g)
 print(gAction(g, vec, chi))
 print(liftMap(quotientMap(gAction(g, vec, chi)))) # How we compute gAction on this space!
-
+'''
 
 
 '''
@@ -211,3 +214,35 @@ for g in G:
     s.add(x)
 print(s)
 '''
+
+
+print("")
+
+
+# FOUND THE Q DIMENSIONAL SUBSPACE!!!!
+# JUST THE ORTHO COMPLEMENT!!!!
+
+U = W.complement()
+print(U)
+print(U.basis())
+vec = U.basis()[0]
+
+gens = []
+for g in G:
+    v = gAction(g, vec, chi)
+    gens.append(v)
+
+test = V.subspace(gens)
+print(test)
+
+
+
+g = G([[1, 2], [1, 1]])
+vec = U.random_element()
+vec2 = W.basis()[0]
+
+print(vec)
+print(gAction(g, vec, chi))
+print(vec.dot_product(conjugate(gAction(g, vec, chi))))
+print(vec2)
+print(gAction(g, vec2, chi))

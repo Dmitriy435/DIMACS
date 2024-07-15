@@ -294,8 +294,6 @@ def findGsubspace(chi):
 
 
 
-# HOW TO FIND Q DIMENSIONAL SPACE?????????
-# THIS IS A PROBLEM!!!
 
 chi = badCharsB[_sage_const_1 ]
 findGsubspace(chi)
@@ -338,6 +336,7 @@ def tripleProduct(g):
     induced2 = badCharsB[_sage_const_0 ]
 
     Vtiny = findGsubspace(induced2)
+    VtinyComplement = Vtiny.complement()
 
     one = matrixCoeffCuspidal(g, Vsmall.random_element(), Vsmall.random_element(), cusp)
     two = matrixCoeffInduced(g, Vbig.random_element(), Vbig.random_element(), induced1)
