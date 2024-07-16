@@ -97,7 +97,7 @@ def nu(l):
 
 
 
-# Group action as described pg 40 in P-S
+# Group action
 def gAction(g, vec):
     if g.matrix()[1, 0] == 0:
         # Easier implementation, g is in B

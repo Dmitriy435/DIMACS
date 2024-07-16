@@ -4,7 +4,7 @@
 
 
 # Field and general linear group
-q = 5
+q = 3
 K = GF(q)
 G = GL(2, K)
 MS = MatrixSpace(K, 2)
@@ -22,9 +22,9 @@ U = G.subgroup(gens)
 
 
 # Vector subspaces:
-Vsmall = VectorSpace(CC, q-1)
-Vbig = VectorSpace(QQbar, q+1)
-H = Hom(Vbig, Vbig)
+Vcuspidal = VectorSpace(QQbar, q-1)
+Vinduced = VectorSpace(QQbar, q+1)
+H = Hom(Vinduced, Vinduced)
 
 
 
@@ -71,7 +71,31 @@ for i in range(0, len(B.conjugacy_classes_representatives())):
             goodCharsB.append(B.character(ct[i]))
         else:
             badCharsB.append(B.character(ct[i]))
-print("Lengths of the good chars and bad chars of B (good chars double counted)")
+
+for i in range(0, len(goodCharsB)):
+    if i >= len(goodCharsB):
+        break
+
+    char1 = goodCharsB[i]
+    for j in range(i+1, len(goodCharsB)):
+        char2 = goodCharsB[j]
+
+        equalsInverse = True
+        for x in K:
+            for y in K:
+                if x == 0 or y == 0:
+                    continue
+                g = G(MS([[x, 0], [0, y]]))
+                w = G(MS([[0, 1], [1, 0]]))
+                if char1(g) != char2(w * g * w):
+                    equalsInverse = False
+                    break
+        if equalsInverse:
+            goodCharsB.remove(char2)
+            break
+
+
+print("Lengths of the good chars and bad chars of B (double counted good chars removed)")
 print(len(goodCharsB))
 print(len(badCharsB))
 print("")
@@ -110,9 +134,27 @@ for i in range(0, len(Lx.conjugacy_classes_representatives())):
                 break
         if not decomposable:
             nondecomposableChars.append(char)
-print("This is how many nondecomp chars of L we have (also double counted)")
+
+for i in range(0, len(nondecomposableChars)):
+    if i >= len(nondecomposableChars):
+        break
+
+    char1 = nondecomposableChars[i]
+    for j in range(i+1, len(nondecomposableChars)):
+        char2 = nondecomposableChars[j]
+        equalsConjugate = True
+        for x in Lx:
+            if char1(conjugateOfL(x)) != char2(x):
+                equalsConjugate = False
+                break
+        if equalsConjugate:
+            nondecomposableChars.remove(char2)
+            break
+
+print("This is how many nondecomp chars of L we have (double counted reps removed)")
 print(len(nondecomposableChars))
 print("")
+
 
 
 # Char of L - takes in elem in L and an elem in nondecomposableChars
@@ -146,7 +188,7 @@ def toRepresentativeInduced(g):
 
 # Gives the G action result of group element g from G onto vector v from V, with rep induced by chi
 def gActionInduced(g, vec, chi):
-    newVec = Vbig([0] * (q+1))
+    newVec = Vinduced([0] * (q+1))
     for i in range(0, q+1):
         if vec[i] == 0:
             continue
@@ -169,7 +211,7 @@ def gActionInduced(g, vec, chi):
 def gActionCuspidal(g, vec, nondecompChar):
     if g.matrix()[1, 0] == 0:
         # Easier implementation, g is in B
-        newVec = Vsmall([0] * (q-1))
+        newVec = Vcuspidal([0] * (q-1))
 
         a = g.matrix()[0, 0]
         b = g.matrix()[0, 1]
@@ -191,7 +233,7 @@ def gActionCuspidal(g, vec, nondecompChar):
 
     else:
         # Harder longer formula
-        newVec = Vsmall([0] * (q-1))
+        newVec = Vcuspidal([0] * (q-1))
 
         for i in range(0, q-1):
             if vec[i] == 0:
@@ -230,7 +272,7 @@ def coeff(y, x, g, nondecompChar):
 
 # Finds eigenSpaces of particular g given the character chi for which this representations is induced
 def eigenSpaces(g, chi):
-    img = [gActionInduced(g, basisVec, chi) for basisVec in Vbig.basis()]
+    img = [gActionInduced(g, basisVec, chi) for basisVec in Vinduced.basis()]
     f = H(img)
     M = f.matrix()
     eigenSpaces = M.eigenspaces_left()
@@ -290,25 +332,6 @@ def findGsubspace(chi):
 
 
 
-chi = badCharsB[1]
-findGsubspace(chi)
-
-g = G.random_element()
-
-vec1 = Vbig([0] * (q+1))
-vec1[0] = 1
-vec2 = Vbig([0] * (q+1))
-vec2[1] = 1
-vec3 = Vbig([0] * (q+1))
-vec3[2] = 1
-
-print(gActionInduced(g, vec1, chi))
-print(gActionInduced(g, vec2, chi))
-print(gActionInduced(g, vec3, chi))
-
-
-
-
 
 
 # Matrix coeff of cuspidal
@@ -324,7 +347,7 @@ def matrixCoeffInduced(g, vec1, vec2, chi):
 
 
 
-
+# Gives the triple product - have to specify the representations and the vectors inside the function
 def tripleProduct(g):
     cusp = nondecomposableChars[0]
     induced1 = goodCharsB[0]
@@ -333,15 +356,153 @@ def tripleProduct(g):
     Vtiny = findGsubspace(induced2)
     VtinyComplement = Vtiny.complement()
 
-    one = matrixCoeffCuspidal(g, Vsmall.random_element(), Vsmall.random_element(), cusp)
-    two = matrixCoeffInduced(g, Vbig.random_element(), Vbig.random_element(), induced1)
+    one = matrixCoeffCuspidal(g, Vcuspidal.random_element(), Vcuspidal.random_element(), cusp)
+    two = matrixCoeffInduced(g, Vinduced.random_element(), Vinduced.random_element(), induced1)
     three = matrixCoeffInduced(g, Vtiny.random_element(), Vtiny.random_element(), induced2)
 
     return one * two * three
 
-
+'''
 print("")
 g = G.random_element()
 print(g)
 
 print(tripleProduct(g))
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Trying to implement basically the tensor product of reps
+# Implementation works, but not finding the invariant subspace :(
+
+
+
+cusp = nondecomposableChars[0]
+induced1 = goodCharsB[0]
+induced2 = goodCharsB[0]
+
+#Vtiny = findGsubspace(induced2)
+#Vinduced2 = Vtiny.complement()
+
+
+
+
+print("")
+
+from sage.modules.tensor_operations import VectorCollection, TensorOperation
+
+temp1 = VectorCollection(Vcuspidal.basis(), QQbar, q-1)
+temp2 = VectorCollection(Vinduced.basis(), QQbar, q+1)
+temp3 = VectorCollection(Vinduced.basis(), QQbar, q+1)
+
+
+Vtest = TensorOperation([temp1, temp2, temp3])
+homomorphismsTripleProduct = Hom(Vtest, Vtest)
+print(Vtest)
+#print(Vtest.basis())
+
+
+
+# WARNING! For now, the representations used are hard coded into these functions
+
+def gActionTripleProduct(g, vec1, vec2, vec3):
+    v1 = gActionCuspidal(g, vec1, cusp)
+    v2 = gActionInduced(g, vec2, induced1)
+    v3 = gActionInduced(g, vec3, induced2)
+
+
+    newVec = Vtest([0]*(q-1)*(q+1)*(q+1))
+
+    for i, j, k in cartesian_product((range(q-1), range(q+1), range(q+1))):
+        #print(i)
+        #print(j)
+        #print(temp1.vectors()[i])
+        #print(temp2.vectors()[j])
+        #print("")
+        newVec[Vtest.index_map(i, j, k)] = v1[i] * v2[j] * v3[k]
+
+    return newVec
+
+vec1 = Vcuspidal.random_element()
+vec2 = Vinduced.random_element()
+vec3 = Vinduced.random_element()
+g = G.random_element()
+
+#print(gActionTripleProduct(g, vec1, vec2, vec3))
+
+
+
+def tripleProductInvariantSpaces(g):
+    img = []
+
+    for vec1 in Vcuspidal.basis():
+        #print("")
+        for vec2 in Vinduced.basis():
+            for vec3 in Vinduced.basis():
+                img.append(gActionTripleProduct(g, vec1, vec2, vec3))
+    
+    f = homomorphismsTripleProduct(img)
+    M = f.matrix()
+    eigenSpaces = M.eigenspaces_left()
+    return eigenSpaces
+
+
+def findTripleProductInvariantSubspace():
+    memorySet = set()
+    g = G.random_element()
+    spaces = tripleProductInvariantSpaces(g)
+    for t in spaces:
+        #print(t[1])
+        memorySet.add(t[1])
+    print(len(memorySet))
+
+    for g in G:
+        if len(memorySet) == 1 and list(memorySet)[0].dimension() == 0:
+            break
+
+        # ONLY FOR DEALING WITH BAD CHARACTERS!!! MAY CAUSE ERRORS WHEN TESTING THIS ON THE GOOD CHARACTERS!!!
+        if len(memorySet) == 2:
+            l = []
+            for x in memorySet:
+                l.append(x.dimension())
+            if l == [0, 1] or l == [1, 0]:
+                break
+        # Although reduces accuracy, the speed is improved 100 fold
+
+        spaces = tripleProductInvariantSpaces(g)
+        gSet = set()
+        for t in spaces:
+            gSet.add(t[1])
+
+        tempSet = set()
+        for ogSpace in memorySet:
+            for newSpace in gSet:
+                t = ogSpace.intersection(newSpace)
+                tempSet.add(t)
+        #print(tempSet)
+        memorySet = tempSet
+        print(len(memorySet))
+        print(g)
+
+    if len(memorySet) == 1:
+        print("No G-invariant subspace, uh-oh")
+    else:
+        print("This is the 1d G-invariant subspace:")
+        for item in memorySet:
+            if item.dimension()==1:
+                print(item)
+                return item
+
+
+findTripleProductInvariantSubspace()
