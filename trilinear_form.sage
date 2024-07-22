@@ -4,7 +4,7 @@
 
 
 # Field and general linear group
-q = 3
+q = 5
 K = GF(q)
 G = GL(2, K)
 MS = MatrixSpace(K, 2)
@@ -100,6 +100,43 @@ print(len(goodCharsB))
 print(len(badCharsB))
 print("")
 
+# Determining the characters of K^x that make up each char of B
+test1 = G(MS([[a, 0], [0, 1]]))
+test2 = G(MS([[1, 0], [0, a]]))
+print("Our generator of K^x is " + str(a))
+print("")
+for i in range(len(goodCharsB)):
+    print("This is character " + str(i) + ", and the following are the two values of chi_1 and chi_2 on the generator:")
+    print(goodCharsB[i](test1))
+    print(goodCharsB[i](test2))
+    print("")
+
+
+
+'''
+C = Combinations(list(range(len(goodCharsB))) * 3, 3)
+print("")
+
+for chars in C:
+    chi1 = goodCharsB[chars[0]]
+    chi2 = goodCharsB[chars[1]]
+    chi3 = goodCharsB[chars[2]]
+
+    centralCharTrivial = True
+    for x in K:
+        if x != 0:
+            d = G(MS([[x, 0], [0, x]]))
+            prod = chi1(d) * chi2(d) * chi3(d)
+            if prod != 1:
+                centralCharTrivial = False
+                break
+    if centralCharTrivial:
+        print("Triple of good characters with trivial central character:")
+        print(chars)
+        
+
+print("")
+'''
 
 
 
@@ -347,162 +384,115 @@ def matrixCoeffInduced(g, vec1, vec2, chi):
 
 
 
-# Gives the triple product - have to specify the representations and the vectors inside the function
-def tripleProduct(g):
-    cusp = nondecomposableChars[0]
-    induced1 = goodCharsB[0]
-    induced2 = badCharsB[0]
 
-    Vtiny = findGsubspace(induced2)
-    VtinyComplement = Vtiny.complement()
 
-    one = matrixCoeffCuspidal(g, Vcuspidal.random_element(), Vcuspidal.random_element(), cusp)
-    two = matrixCoeffInduced(g, Vinduced.random_element(), Vinduced.random_element(), induced1)
-    three = matrixCoeffInduced(g, Vtiny.random_element(), Vtiny.random_element(), induced2)
+# CHANGE CHARACTERS USED HERE!!!
 
+induced1 = goodCharsB[5]
+induced2 = goodCharsB[5]
+induced3 = goodCharsB[5]
+
+#cusp = nondecomposableChars[0]
+
+
+vec1 = Vinduced.basis()[0]
+vec2 = Vinduced.basis()[1]
+vec3 = Vinduced.basis()[2]
+
+
+# Evaluates function vec at value g
+def evalInduced(g, vec, char):
+    rep = toRepresentativeInduced(g)
+    index = cosetRepsB.index(rep)
+    if vec[index] == 0:
+        return 0
+    b = g * rep.inverse()
+    return vec[index] * char(b)
+
+
+# Gives the triple product - have to specify the representations inside the function
+def tripleProduct(g, v1, v2, v3):
+    one = matrixCoeffInduced(g, v1, v1, induced1)
+    if one == 0:
+        return 0
+    two = matrixCoeffInduced(g, v2, v2, induced2)
+    if two == 0:
+        return 0
+    three = matrixCoeffInduced(g, v3, v3, induced3)
+    sol = one * two * three
+    #if sol != 0:
+    #    print(g.inverse())
+    #print(one * two * three)
     return one * two * three
 
-'''
-print("")
-g = G.random_element()
-print(g)
+# Gives trilinear form by avergaing matrix coefficients over the whole group
+def trilinearForm(v1, v2, v3):
+    l = [tripleProduct(g, v1, v2, v3) for g in G]
+    l = [i for i in l if i != 0]
+    print(len(l))
+    s = sum(l)
+    return s / G.order()
 
-print(tripleProduct(g))
-'''
+# Given vector of induced rep and element g, returns the Whittaker fn of that element
+def whittaker(g, vec, char):
+    s = 0
+    for z in K:
+        inp = G(MS([[0, 1], [1, 0]])) * G(MS([[1, z], [0, 1]])) * g 
+        s = s + evalInduced(inp, vec, char) * (1 / psi(z))
+    return s
 
+def whittaker2(g, vec, char):
+    s = 0
+    for z in K:
+        inp = G(MS([[0, 1], [1, 0]])) * G(MS([[1, z], [0, 1]])) * g 
+        s = s + evalInduced(inp, vec, char) * psi(z)
+    return s
 
-
-
-
-
-
-
-
-
-
-
-
-
-# Trying to implement basically the tensor product of reps
-# Implementation works, but not finding the invariant subspace :(
-
-
-
-cusp = nondecomposableChars[0]
-induced1 = goodCharsB[0]
-induced2 = goodCharsB[0]
-
-#Vtiny = findGsubspace(induced2)
-#Vinduced2 = Vtiny.complement()
-
-
-
-
-print("")
-
-from sage.modules.tensor_operations import VectorCollection, TensorOperation
-
-temp1 = VectorCollection(Vcuspidal.basis(), QQbar, q-1)
-temp2 = VectorCollection(Vinduced.basis(), QQbar, q+1)
-temp3 = VectorCollection(Vinduced.basis(), QQbar, q+1)
-
-
-Vtest = TensorOperation([temp1, temp2, temp3])
-homomorphismsTripleProduct = Hom(Vtest, Vtest)
-print(Vtest)
-#print(Vtest.basis())
-
-
-
-# WARNING! For now, the representations used are hard coded into these functions
-
-def gActionTripleProduct(g, vec1, vec2, vec3):
-    v1 = gActionCuspidal(g, vec1, cusp)
-    v2 = gActionInduced(g, vec2, induced1)
-    v3 = gActionInduced(g, vec3, induced2)
-
-
-    newVec = Vtest([0]*(q-1)*(q+1)*(q+1))
-
-    for i, j, k in cartesian_product((range(q-1), range(q+1), range(q+1))):
-        #print(i)
-        #print(j)
-        #print(temp1.vectors()[i])
-        #print(temp2.vectors()[j])
-        #print("")
-        newVec[Vtest.index_map(i, j, k)] = v1[i] * v2[j] * v3[k]
-
-    return newVec
-
-vec1 = Vcuspidal.random_element()
-vec2 = Vinduced.random_element()
-vec3 = Vinduced.random_element()
-g = G.random_element()
-
-#print(gActionTripleProduct(g, vec1, vec2, vec3))
-
-
-
-def tripleProductInvariantSpaces(g):
-    img = []
-
-    for vec1 in Vcuspidal.basis():
-        #print("")
-        for vec2 in Vinduced.basis():
-            for vec3 in Vinduced.basis():
-                img.append(gActionTripleProduct(g, vec1, vec2, vec3))
-    
-    f = homomorphismsTripleProduct(img)
-    M = f.matrix()
-    eigenSpaces = M.eigenspaces_left()
-    return eigenSpaces
-
-
-def findTripleProductInvariantSubspace():
-    memorySet = set()
-    g = G.random_element()
-    spaces = tripleProductInvariantSpaces(g)
-    for t in spaces:
-        #print(t[1])
-        memorySet.add(t[1])
-    print(len(memorySet))
-
+#Computes RS trilinear form
+def RStrilinearForm(v1, v2, v3):
+    s = 0
     for g in G:
-        if len(memorySet) == 1 and list(memorySet)[0].dimension() == 0:
-            break
+        val1 = evalInduced(g, v1, induced1)
+        if val1 == 0:
+            continue
+        val2 = whittaker(g, v2, induced2)
+        if val2 == 0:
+            continue
+        s = s + val1 * val2 * whittaker2(g, v3, induced3)
 
-        # ONLY FOR DEALING WITH BAD CHARACTERS!!! MAY CAUSE ERRORS WHEN TESTING THIS ON THE GOOD CHARACTERS!!!
-        if len(memorySet) == 2:
-            l = []
-            for x in memorySet:
-                l.append(x.dimension())
-            if l == [0, 1] or l == [1, 0]:
-                break
-        # Although reduces accuracy, the speed is improved 100 fold
+    s = s / G.order()
+    return norm(s)
+#print(vec1)
+#print(vec2)
+#print(vec3)
 
-        spaces = tripleProductInvariantSpaces(g)
-        gSet = set()
-        for t in spaces:
-            gSet.add(t[1])
-
-        tempSet = set()
-        for ogSpace in memorySet:
-            for newSpace in gSet:
-                t = ogSpace.intersection(newSpace)
-                tempSet.add(t)
-        #print(tempSet)
-        memorySet = tempSet
-        print(len(memorySet))
-        print(g)
-
-    if len(memorySet) == 1:
-        print("No G-invariant subspace, uh-oh")
-    else:
-        print("This is the 1d G-invariant subspace:")
-        for item in memorySet:
-            if item.dimension()==1:
-                print(item)
-                return item
+print("")
 
 
-findTripleProductInvariantSubspace()
+
+
+
+
+print(trilinearForm(vec1, vec2, vec3))
+print(RStrilinearForm(vec1, vec2, vec3))
+
+
+
+for i, j, k in cartesian_product((range(q+1), range(q+1), range(q+1))):
+    v1 = Vinduced.basis()[i]
+    v2 = Vinduced.basis()[j]
+    v3 = Vinduced.basis()[k]
+    if v1 == v2 or v1 == v3 or v2 == v3:
+        print("Not all different basis vecs")
+    calc1 = trilinearForm(v1, v2, v3)
+    calc2 = RStrilinearForm(v1, v2, v3)
+    if calc2 < 0.0000001:
+        calc2 = 0
+    print(calc1)
+    print(calc2)
+    if calc1 != 0:
+        print(calc2 / calc1)
+        print(v1)
+        print(v2)
+        print(v3)
+    print("")

@@ -3,7 +3,7 @@ from multiprocessing import Pool
 # Preliminaries
 
 # Field and general linear group
-q = 3
+q = 5
 K = GF(q)
 G = GL(2, K)
 
@@ -208,10 +208,11 @@ y = vec1.dot_product(conjugate(vec2))
 print(y)
 
 
-#g = G.random_element()
+g = G.random_element()
+print(g)
 #g = G([[1, 0], [0, 1]])
-#M = bigMatrix(g)
-#printMatrix(M)
+M = bigMatrix(g)
+printMatrix(M)
 
 
 #g = G.random_element()
