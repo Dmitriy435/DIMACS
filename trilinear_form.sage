@@ -49,6 +49,22 @@ rep = G(MS([[0,1],[1,0]]))
 cosetRepsB.append(rep)
 
 
+# Reps of U
+cosetRepsD = []
+for x in K:
+    if x != 0:
+        for y in K:
+            if y != 0:
+                rep = G(MS([[1 / x, 0],[0, 1 / y]]))
+                cosetRepsD.append(rep)
+
+cosetRepsU = []
+for gRep in cosetRepsB:
+    for dRep in cosetRepsD:
+        rep = dRep * gRep
+        cosetRepsU.append(rep)
+
+
 
 
 
@@ -180,8 +196,8 @@ for i in range(0, len(nondecomposableChars)):
     for j in range(i+1, len(nondecomposableChars)):
         char2 = nondecomposableChars[j]
         equalsConjugate = True
-        for x in Lx:
-            if char1(conjugateOfL(x)) != char2(x):
+        for x in K:
+            if x!= 0 and conjugate(char1(Lx(MSforL([x])))) != char2(Lx(MSforL([x]))):
                 equalsConjugate = False
                 break
         if equalsConjugate:
@@ -190,6 +206,8 @@ for i in range(0, len(nondecomposableChars)):
 
 print("This is how many nondecomp chars of L we have (double counted reps removed)")
 print(len(nondecomposableChars))
+for c in nondecomposableChars:
+    print(c.values())
 print("")
 
 
@@ -388,9 +406,9 @@ def matrixCoeffInduced(g, vec1, vec2, chi):
 
 # CHANGE CHARACTERS USED HERE!!!
 
-induced1 = goodCharsB[5]
-induced2 = goodCharsB[5]
-induced3 = goodCharsB[5]
+induced1 = goodCharsB[0]
+induced2 = goodCharsB[1]
+induced3 = goodCharsB[1]
 
 #cusp = nondecomposableChars[0]
 
@@ -398,6 +416,7 @@ induced3 = goodCharsB[5]
 vec1 = Vinduced.basis()[0]
 vec2 = Vinduced.basis()[1]
 vec3 = Vinduced.basis()[2]
+
 
 
 # Evaluates function vec at value g
@@ -462,22 +481,51 @@ def RStrilinearForm(v1, v2, v3):
 
     s = s / G.order()
     return norm(s)
-#print(vec1)
-#print(vec2)
-#print(vec3)
-
 print("")
 
 
+# Testing the normalizing factors of the trilinear forms
+
+'''
+s1 = 0
+for g in cosetRepsB:
+    temp = evalInduced(g, vec1, induced1)
+    s1 = s1 + temp * conjugate(temp)
+print(s1)
+
+s1 = 0
+for g in cosetRepsB:
+    temp = evalInduced(g, vec2, induced2)
+    s1 = s1 + temp * conjugate(temp)
+print(s1)
+
+s1 = 0
+for g in cosetRepsB:
+    temp = evalInduced(g, vec3, induced3)
+    s1 = s1 + temp * conjugate(temp)
+print(s1)
 
 
+s = 0
+for g in cosetRepsB:
+    temp = whittaker(g, vec2, induced2)
+    s = s + temp * conjugate(temp)
+print(s)
 
+s2 = 0
+for g in cosetRepsB:
+    temp = whittaker2(g, vec3, induced3)
+    s2 = s2 + temp * conjugate(temp)
+print(s2)
 
 print(trilinearForm(vec1, vec2, vec3))
 print(RStrilinearForm(vec1, vec2, vec3))
+'''
 
 
 
+# Iterates over all basis vectors and computes the trilinear forms of them
+'''
 for i, j, k in cartesian_product((range(q+1), range(q+1), range(q+1))):
     v1 = Vinduced.basis()[i]
     v2 = Vinduced.basis()[j]
@@ -496,3 +544,4 @@ for i, j, k in cartesian_product((range(q+1), range(q+1), range(q+1))):
         print(v2)
         print(v3)
     print("")
+'''
