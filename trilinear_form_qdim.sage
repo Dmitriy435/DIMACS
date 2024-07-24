@@ -129,14 +129,78 @@ for i in range(len(goodCharsB)):
 
 
 
+
+
+# Finding combos with trivial central character:
+
+# 2 q+1 dim, 1 q dim
 '''
-C = Combinations(list(range(len(goodCharsB))) * 3, 3)
+C = Combinations(list(range(len(goodCharsB))) * 2, 2)
 print("")
 
+count = 0
 for chars in C:
-    chi1 = goodCharsB[chars[0]]
-    chi2 = goodCharsB[chars[1]]
-    chi3 = goodCharsB[chars[2]]
+    for i in range(0, len(badCharsB)):
+        chi1 = goodCharsB[chars[0]]
+        chi2 = goodCharsB[chars[1]]
+        chi3 = badCharsB[i]
+
+        centralCharTrivial = True
+        for x in K:
+            if x != 0:
+                d = G(MS([[x, 0], [0, x]]))
+                prod = chi1(d) * chi2(d) * chi3(d)
+                if prod != 1:
+                    centralCharTrivial = False
+                    break
+        if centralCharTrivial:
+            print("Triple of 2 good characters and 1 bad one with trivial central character:")
+            print(chars, end=", ")
+            print(i)
+            count = count+1
+print("There are " + str(count)+" valid combinations")
+'''
+
+
+# 1 q+1 dim, 2 q dim
+'''
+C = Combinations(list(range(len(badCharsB))) * 2, 2)
+print("")
+
+count = 0
+for chars in C:
+    for i in range(0, len(goodCharsB)):
+        chi1 = badCharsB[chars[0]]
+        chi2 = badCharsB[chars[1]]
+        chi3 = goodCharsB[i]
+
+        centralCharTrivial = True
+        for x in K:
+            if x != 0:
+                d = G(MS([[x, 0], [0, x]]))
+                prod = chi1(d) * chi2(d) * chi3(d)
+                if prod != 1:
+                    centralCharTrivial = False
+                    break
+        if centralCharTrivial:
+            print("Triple of 1 good character and 2 bad ones with trivial central character:")
+            print(i, end=", ")
+            print(chars)
+            count = count+1
+print("There are " + str(count)+" valid combinations")
+'''
+
+
+# 3 q dim - not fixed yet
+
+C = Combinations(list(range(len(badCharsB))) * 3, 3)
+print("")
+
+count = 0
+for chars in C:
+    chi1 = badCharsB[chars[0]]
+    chi2 = badCharsB[chars[1]]
+    chi3 = badCharsB[chars[2]]
 
     centralCharTrivial = True
     for x in K:
@@ -147,12 +211,24 @@ for chars in C:
                 centralCharTrivial = False
                 break
     if centralCharTrivial:
-        print("Triple of good characters with trivial central character:")
+        print("Triple of 3 bad characters with trivial central character:")
         print(chars)
+        count = count+1
+print("There are " + str(count)+" valid combinations")
+
+
+
+
+
+
+
+
+
+
         
 
 print("")
-'''
+
 
 
 
@@ -166,64 +242,6 @@ print("")
 # Pass in member of K and get the value of the char of U back
 def psi(x):
     return charU(G(MS([[1, x], [0, 1]])))
-
-# Getting nondecomp characters of L^x
-Lx = GL(1, L)
-MSforL = MatrixSpace(L, 1)
-ct2 = Lx.character_table()
-
-# Conjugate of elem in L
-def conjugateOfL(l):
-    return l^q
-
-nondecomposableChars = []
-for i in range(0, len(Lx.conjugacy_classes_representatives())):
-    if ct2[i][0] == 1:
-        char = Lx.character(ct2[i])
-        decomposable = True
-        for x in Lx:
-            if char(x) != char(conjugateOfL(x)):
-                decomposable = False
-                break
-        if not decomposable:
-            nondecomposableChars.append(char)
-
-for i in range(0, len(nondecomposableChars)):
-    if i >= len(nondecomposableChars):
-        break
-
-    char1 = nondecomposableChars[i]
-    for j in range(i+1, len(nondecomposableChars)):
-        char2 = nondecomposableChars[j]
-        equalsConjugate = True
-        for x in K:
-            if x!= 0 and conjugate(char1(Lx(MSforL([x])))) != char2(Lx(MSforL([x]))):
-                equalsConjugate = False
-                break
-        if equalsConjugate:
-            nondecomposableChars.remove(char2)
-            break
-
-print("This is how many nondecomp chars of L we have (double counted reps removed)")
-print(len(nondecomposableChars))
-for c in nondecomposableChars:
-    print(c.values())
-print("")
-
-
-
-# Char of L - takes in elem in L and an elem in nondecomposableChars
-def nu(l, nondecompChar):
-    v = Lx(MSforL([l]))
-    return nondecompChar(v)
-
-
-
-
-
-
-
-
 
 
 
@@ -258,66 +276,6 @@ def gActionInduced(g, vec, chi):
 
     return newVec
 # Linear time
-
-
-
-
-# Group action as described pg 40 in P-S, given a nondecomp character of L
-def gActionCuspidal(g, vec, nondecompChar):
-    if g.matrix()[1, 0] == 0:
-        # Easier implementation, g is in B
-        newVec = Vcuspidal([0] * (q-1))
-
-        a = g.matrix()[0, 0]
-        b = g.matrix()[0, 1]
-        d = g.matrix()[1, 1]
-
-        for i in range(0, q-1):
-            if vec[i] == 0:
-                continue
-    
-            oldRep = basisRepsCuspidal[i]
-
-            newRep = d * (1 / a) * oldRep
-            newIndex = basisRepsCuspidal.index(newRep)
-            coefficient = nu(d, nondecompChar) * psi(b * (1 / a) * oldRep)
-
-            newVec[newIndex] = newVec[newIndex] + coefficient * vec[i]
-        
-        return newVec
-
-    else:
-        # Harder longer formula
-        newVec = Vcuspidal([0] * (q-1))
-
-        for i in range(0, q-1):
-            if vec[i] == 0:
-                continue
-            
-            oldRep = basisRepsCuspidal[i]
-            for j in range(0, q-1):
-                y = basisRepsCuspidal[j]
-                newVec[j] = newVec[j] + coeff(y, oldRep, g, nondecompChar) * vec[i]
-        
-        return newVec
-# Fast
-
-
-# Helper function for gAction - calculates the coefficients when g is not in B
-def coeff(y, x, g, nondecompChar):
-    a = g.matrix()[0, 0]
-    b = g.matrix()[0, 1]
-    c = g.matrix()[1, 0]
-    d = g.matrix()[1, 1]
-    temp = 0
-
-    comparison = y * (1 / x) * (a*d - b*c)
-    for u in L:
-        if u != 0 and u * conjugateOfL(u) == comparison:
-            temp = temp + nu(u, nondecompChar) * psi(- (x / c) * (u + conjugateOfL(u)))
-    
-    return temp * psi((a * y + d * x) / c) / q
-# Fast as well
 
 
 
@@ -389,11 +347,6 @@ def findGsubspace(chi):
 
 
 
-# Matrix coeff of cuspidal
-def matrixCoeffCuspidal(g, vec1, vec2, nondecompChar):
-    v = gActionCuspidal(g, vec1, nondecompChar)
-    return v.dot_product(conjugate(vec2))
-
 # Matrix coeff of Induced (no matter what irrep in particular)
 def matrixCoeffInduced(g, vec1, vec2, chi):
     v = gActionInduced(g, vec1, chi)
@@ -406,16 +359,25 @@ def matrixCoeffInduced(g, vec1, vec2, chi):
 
 # CHANGE CHARACTERS USED HERE!!!
 
-induced1 = goodCharsB[0]
-induced2 = goodCharsB[1]
-induced3 = goodCharsB[1]
-
-#cusp = nondecomposableChars[0]
+induced1 = badCharsB[1]
+induced2 = badCharsB[2]
+induced3 = badCharsB[3]
 
 
-vec1 = Vinduced.basis()[0]
-vec2 = Vinduced.basis()[1]
-vec3 = Vinduced.basis()[2]
+OneDSpace1 = findGsubspace(induced1)
+Vqdim1 = OneDSpace1.complement()
+
+OneDSpace2 = findGsubspace(induced2)
+Vqdim2 = OneDSpace2.complement()
+
+OneDSpace3 = findGsubspace(induced3)
+Vqdim3 = OneDSpace3.complement()
+
+
+
+#vec1 = Vinduced.basis()[0]
+#vec2 = Vinduced.basis()[1]
+#vec3 = Vinduced.basis()[2]
 
 
 
@@ -484,52 +446,14 @@ def RStrilinearForm(v1, v2, v3):
 print("")
 
 
-# Testing the normalizing factors of the trilinear forms
-
-'''
-s1 = 0
-for g in cosetRepsB:
-    temp = evalInduced(g, vec1, induced1)
-    s1 = s1 + temp * conjugate(temp)
-print(s1)
-
-s1 = 0
-for g in cosetRepsB:
-    temp = evalInduced(g, vec2, induced2)
-    s1 = s1 + temp * conjugate(temp)
-print(s1)
-
-s1 = 0
-for g in cosetRepsB:
-    temp = evalInduced(g, vec3, induced3)
-    s1 = s1 + temp * conjugate(temp)
-print(s1)
-
-
-s = 0
-for g in cosetRepsB:
-    temp = whittaker(g, vec2, induced2)
-    s = s + temp * conjugate(temp)
-print(s)
-
-s2 = 0
-for g in cosetRepsB:
-    temp = whittaker2(g, vec3, induced3)
-    s2 = s2 + temp * conjugate(temp)
-print(s2)
-
-print(trilinearForm(vec1, vec2, vec3))
-print(RStrilinearForm(vec1, vec2, vec3))
-'''
-
 
 
 # Iterates over all basis vectors and computes the trilinear forms of them
-'''
-for i, j, k in cartesian_product((range(q+1), range(q+1), range(q+1))):
-    v1 = Vinduced.basis()[i]
-    v2 = Vinduced.basis()[j]
-    v3 = Vinduced.basis()[k]
+
+for i, j, k in cartesian_product((range(q), range(q), range(q))):
+    v1 = Vqdim1.basis()[i]
+    v2 = Vqdim2.basis()[j]
+    v3 = Vqdim3.basis()[k]
     if v1 == v2 or v1 == v3 or v2 == v3:
         print("Not all different basis vecs")
     calc1 = trilinearForm(v1, v2, v3)
@@ -544,4 +468,3 @@ for i, j, k in cartesian_product((range(q+1), range(q+1), range(q+1))):
         print(v2)
         print(v3)
     print("")
-'''

@@ -302,7 +302,7 @@ def gActionCuspidal(g, vec, nondecompChar):
             oldRep = basisRepsCuspidal[i]
             for j in range(_sage_const_0 , q-_sage_const_1 ):
                 y = basisRepsCuspidal[j]
-                newVec[j] = coeff(y, oldRep, g, nondecompChar) * vec[i]
+                newVec[j] = newVec[j] + coeff(y, oldRep, g, nondecompChar) * vec[i]
         
         return newVec
 # Fast
@@ -386,7 +386,7 @@ def findGsubspace(chi):
 # Runs pretty slowly when bad character - any way to speed this up?
 # Could start checking if only 1d subspace left, then just simply check if this remains to be eigenvector for remainding elems
 
-
+# ABOVE FUNCTION IS SO UNNECESSARY, WE HAVE EXPLICIT FORMULA FOR THIS VECTOR!!!
 
 
 
@@ -485,7 +485,7 @@ def RStrilinearForm(v1, v2, v3):
         s = s + val1 * val2 * whittaker2(g, v3, induced3)
 
     s = s / G.order()
-    return norm(s)
+    return QQ(norm(s))
 print("")
 
 

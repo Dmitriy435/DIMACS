@@ -462,7 +462,7 @@ def RStrilinearForm(v1, v2, v3):
         s = s + val1 * val2 * whittaker2(g, v3, induced3)
 
     s = s / G.order()
-    return norm(s)
+    return QQ(norm(s))
 print("")
 
 
