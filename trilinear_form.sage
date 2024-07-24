@@ -297,7 +297,7 @@ def gActionCuspidal(g, vec, nondecompChar):
             oldRep = basisRepsCuspidal[i]
             for j in range(0, q-1):
                 y = basisRepsCuspidal[j]
-                newVec[j] = coeff(y, oldRep, g, nondecompChar) * vec[i]
+                newVec[j] = newVec[j] + coeff(y, oldRep, g, nondecompChar) * vec[i]
         
         return newVec
 # Fast
@@ -381,7 +381,7 @@ def findGsubspace(chi):
 # Runs pretty slowly when bad character - any way to speed this up?
 # Could start checking if only 1d subspace left, then just simply check if this remains to be eigenvector for remainding elems
 
-
+# ABOVE FUNCTION IS SO UNNECESSARY, WE HAVE EXPLICIT FORMULA FOR THIS VECTOR!!!
 
 
 

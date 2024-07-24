@@ -132,7 +132,7 @@ def gAction(g, vec):
             oldRep = basisRepsCuspidal[i]
             for j in range(0, dim):
                 y = basisRepsCuspidal[j]
-                newVec[j] = coeff(y, oldRep, g) * vec[i]
+                newVec[j] = newVec[j] + coeff(y, oldRep, g) * vec[i]
         
         return newVec
 # Fast
@@ -174,7 +174,7 @@ print(gAction(g, vec))
 
 
 
-# With testing so far, it seems that 
+# With testing so far, it seems that normal dot prod is already G-invariant
 
 def innerProduct(vec1, vec2):
     #sol = 0

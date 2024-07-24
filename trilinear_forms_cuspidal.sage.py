@@ -286,7 +286,7 @@ def gActionCuspidal(g, vec, nondecompChar):
             oldRep = basisRepsCuspidal[i]
             for j in range(_sage_const_0 , q-_sage_const_1 ):
                 y = basisRepsCuspidal[j]
-                newVec[j] = coeff(y, oldRep, g, nondecompChar) * vec[i]
+                newVec[j] = newVec[j] + coeff(y, oldRep, g, nondecompChar) * vec[i]
         
         return newVec
 # Fast
@@ -471,7 +471,7 @@ def RStrilinearForm(v1, v2, v3):
 print("")
 
 
-
+# We don't know how to find Whittaker fns of cuspidal reps, only matrix coeffs
 
 # Iterates over all basis vectors and computes the trilinear forms of them
 
