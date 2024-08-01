@@ -1,10 +1,16 @@
-# Combine are the representations here and calculate the trilinear form
+# THIS FILE IS OBSOLETE - DO NOT USE
 
-# define inner product on cuspidal? - seems like normal dot product works
+
+#################
+
+q = 5
+
+#################
+
+
 
 
 # Field and general linear group
-q = 5
 K = GF(q)
 G = GL(2, K)
 MS = MatrixSpace(K, 2)
@@ -206,8 +212,6 @@ for i in range(0, len(nondecomposableChars)):
 
 print("This is how many nondecomp chars of L we have (double counted reps removed)")
 print(len(nondecomposableChars))
-for c in nondecomposableChars:
-    print(c.values())
 print("")
 
 
@@ -260,8 +264,6 @@ def gActionInduced(g, vec, chi):
 # Linear time
 
 
-
-
 # Group action as described pg 40 in P-S, given a nondecomp character of L
 def gActionCuspidal(g, vec, nondecompChar):
     if g.matrix()[1, 0] == 0:
@@ -303,7 +305,7 @@ def gActionCuspidal(g, vec, nondecompChar):
 # Fast
 
 
-# Helper function for gAction - calculates the coefficients when g is not in B
+# Helper function for gActionCuspidal - calculates the coefficients when g is not in B
 def coeff(y, x, g, nondecompChar):
     a = g.matrix()[0, 0]
     b = g.matrix()[0, 1]
@@ -322,66 +324,14 @@ def coeff(y, x, g, nondecompChar):
 
 
 
-
-
-
-# Finds eigenSpaces of particular g given the character chi for which this representations is induced
-def eigenSpaces(g, chi):
-    img = [gActionInduced(g, basisVec, chi) for basisVec in Vinduced.basis()]
-    f = H(img)
-    M = f.matrix()
-    eigenSpaces = M.eigenspaces_left()
-    return eigenSpaces
-
-
-# Given character of B chi, finds the 1d (if exists) G-invariant subspace of the induced representation
 def findGsubspace(chi):
-    memorySet = set()
-    g = G.random_element()
-    spaces = eigenSpaces(g, chi)
-    for t in spaces:
-        #print(t[1])
-        memorySet.add(t[1])
-    #print(memorySet)
+    sol = Vinduced([1]*(q+1))
+    sol[q] = chi(G(MS([[-1, 0], [0, 1]])))
+    return Vinduced.subspace([sol])
 
-    for g in G:
-        if len(memorySet) == 1 and list(memorySet)[0].dimension() == 0:
-            break
 
-        # ONLY FOR DEALING WITH BAD CHARACTERS!!! MAY CAUSE ERRORS WHEN TESTING THIS ON THE GOOD CHARACTERS!!!
-        if len(memorySet) == 2:
-            l = []
-            for x in memorySet:
-                l.append(x.dimension())
-            if l == [0, 1] or l == [1, 0]:
-                break
-        # Although reduces accuracy, the speed is improved 100 fold
 
-        spaces = eigenSpaces(g, chi)
-        gSet = set()
-        for t in spaces:
-            gSet.add(t[1])
 
-        tempSet = set()
-        for ogSpace in memorySet:
-            for newSpace in gSet:
-                t = ogSpace.intersection(newSpace)
-                tempSet.add(t)
-        #print(tempSet)
-        memorySet = tempSet
-
-    if len(memorySet) == 1:
-        print("This was a good character! No G-invariant subspace!")
-    else:
-        print("This is the 1d G-invariant subspace:")
-        for item in memorySet:
-            if item.dimension()==1:
-                print(item)
-                return item
-# Runs pretty slowly when bad character - any way to speed this up?
-# Could start checking if only 1d subspace left, then just simply check if this remains to be eigenvector for remainding elems
-
-# ABOVE FUNCTION IS SO UNNECESSARY, WE HAVE EXPLICIT FORMULA FOR THIS VECTOR!!!
 
 
 
@@ -450,7 +400,7 @@ def trilinearForm(v1, v2, v3):
     l = [i for i in l if i != 0]
     print(len(l))
     s = sum(l)
-    return s / G.order()
+    return QQ(s / G.order())
 
 # Given vector of induced rep and element g, returns the Whittaker fn of that element
 def whittaker(g, vec, char):

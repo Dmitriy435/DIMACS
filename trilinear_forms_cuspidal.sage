@@ -4,7 +4,7 @@
 
 
 # Field and general linear group
-q = 4
+q = 5
 
 K = GF(q)
 G = GL(2, K)
@@ -390,9 +390,9 @@ def matrixCoeffInduced(g, vec1, vec2, chi):
 
 # CHANGE CHARACTERS USED HERE!!!
 
-induced1 = goodCharsB[1]
+induced1 = goodCharsB[0]
 induced2 = goodCharsB[2]
-cusp = nondecomposableChars[5]
+cusp = nondecomposableChars[7]
 
 
 #vec1 = Vinduced.basis()[0]
@@ -432,7 +432,7 @@ def trilinearForm(v1, v2, v3):
     l = [i for i in l if i != 0]
     print(len(l))
     s = sum(l)
-    return s / G.order()
+    return (s / G.order())
 
 # Given vector of induced rep and element g, returns the Whittaker fn of that element
 def whittaker(g, vec, char):
