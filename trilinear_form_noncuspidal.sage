@@ -30,7 +30,6 @@ U = G.subgroup(gens)
 
 
 # Vector subspaces:
-Vcuspidal = VectorSpace(QQbar, q-1)
 Vinduced = VectorSpace(QQbar, q+1)
 H = Hom(Vinduced, Vinduced)
 
