@@ -1,11 +1,11 @@
 ################# CHANGE HERE!
 
-q = 4
+q = 5
 
 
 # Set how many q and q+1 dimensional we want - must add up to 3
-numQp1 = 2
-numQ = 1
+numQp1 = 0
+numQ = 3
 
 #################
 
@@ -148,7 +148,7 @@ def decomposeChars():
         print("")
 
 
-
+combos = []
 
 # Finding combos with trivial central character:
 def validCombinations():
@@ -171,6 +171,7 @@ def validCombinations():
             if centralCharTrivial:
                 print("Triple of good characters with trivial central character:")
                 print(chars)
+                combos.append(chars)
         print("")
     # 2 q+1 dim, 1 q dim
     if numQ == 1:
@@ -194,6 +195,7 @@ def validCombinations():
                     print("Triple of 2 good characters and 1 bad one with trivial central character:")
                     print(chars, end=", ")
                     print(i)
+                    combos.append((chars[0], chars[1], i))
                     count = count+1
         print("There are " + str(count) + " valid combinations")
 
@@ -220,6 +222,7 @@ def validCombinations():
                     print("Triple of 1 good character and 2 bad ones with trivial central character:")
                     print(i, end=", ")
                     print(chars)
+                    combos.append((i, chars[0], chars[1]))
                     count = count+1
         print("There are " + str(count)+" valid combinations")
 
@@ -245,6 +248,7 @@ def validCombinations():
             if centralCharTrivial:
                 print("Triple of 3 bad characters with trivial central character:")
                 print(chars)
+                combos.append(chars)
                 count = count+1
         print("There are " + str(count)+" valid combinations")
 
@@ -394,30 +398,42 @@ print("")
 
 
 
+# Helper function
+def triformBasisVecsH(i, j, k):
+    v1 = V1.basis()[i]
+    v2 = V2.basis()[j]
+    v3 = V3.basis()[k]
+    if v1 == v2 or v1 == v3 or v2 == v3:
+        print("Not all different basis vecs")
+    calc1 = trilinearForm(v1, v2, v3)
+    calc2 = RStrilinearForm(v1, v2, v3)
+    if calc2 < 0.0000001:
+        calc2 = 0
+    print(calc1)
+    print(calc2)
+    if calc1 != 0:
+        print(calc2 / calc1)
+        print(v1)
+        print(v2)
+        print(v3)
+    print("")
 
 # Iterates over all basis vectors and computes the trilinear forms of them
 def triformBasisVecs():
     for i, j, k in cartesian_product((range(V1.dimension()), range(V2.dimension()), range(V3.dimension()))):
-        v1 = V1.basis()[i]
-        v2 = V2.basis()[j]
-        v3 = V3.basis()[k]
-        if v1 == v2 or v1 == v3 or v2 == v3:
-            print("Not all different basis vecs")
-        calc1 = trilinearForm(v1, v2, v3)
-        calc2 = RStrilinearForm(v1, v2, v3)
-        if calc2 < 0.0000001:
-            calc2 = 0
-        print(calc1)
-        print(calc2)
-        if calc1 != 0:
-            print(calc2 / calc1)
-            print(v1)
-            print(v2)
-            print(v3)
-        print("")
+        triformBasisVecsH(i, j, k)
 # This is a function now so below can be easily commented in/out to toggle
 
 
+# Hits (when numQ = 1) the three varieties that matter
+def triformBasisVecsShort():
+    if numQ == 1:
+        triformBasisVecsH(0, 0, 0)
+        triformBasisVecsH(1, 0, 0)
+        triformBasisVecsH(0, 1, 0)
+        triformBasisVecsH(0, 0, 1)
+        triformBasisVecsH(0, q, 0)
+        triformBasisVecsH(q, 0, 0)
 
 
 
@@ -428,9 +444,9 @@ decomposeChars()
 validCombinations()
 
 
-induced1 = goodCharsB[0]
-induced2 = goodCharsB[0]
-induced3 = badCharsB[2]
+induced1 = badCharsB[1]
+induced2 = badCharsB[3]
+induced3 = badCharsB[3]
 
 
 V1 = Vinduced if induced1 in goodCharsB else findGsubspace(induced1).complement()
@@ -440,5 +456,6 @@ V3 = Vinduced if induced3 in goodCharsB else findGsubspace(induced3).complement(
 
 
 triformBasisVecs()
+#triformBasisVecsShort()
 
 #################
