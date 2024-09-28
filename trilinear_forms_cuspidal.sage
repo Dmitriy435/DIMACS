@@ -1,3 +1,5 @@
+import csv
+
 ################# CHANGE HERE!
 
 q = 5
@@ -5,8 +7,8 @@ q = 5
 
 # Set how many induced and cuspidal we want - must add up to 3
 
-numInd = 1 #For now only working with good chars!
-numCus = 2 #This is at least 1 for this file
+numInd = 0 #For now only working with good chars!
+numCus = 3 #This is at least 1 for this file
 
 #################
 
@@ -417,7 +419,7 @@ def tripleProduct(g, v1, v2, v3):
         three = matrixCoeffInduced(g, v3, v3, char3)
     else:
         three = matrixCoeffCuspidal(g, v3, v3, char3)
-    sol = one * two * three
+    #sol = one * two * three
     #if sol != 0:
     #    print(g.inverse())
     #print(one * two * three)
@@ -441,6 +443,7 @@ def trilinearForm(v1, v2, v3):
 
 # Iterates over all basis vectors and computes the trilinear forms of them
 def triformBasisVecs():
+    sol = []
     for i, j, k in cartesian_product((range(V1.dimension()), range(V2.dimension()), range(V3.dimension()))):
         v1 = V1.basis()[i]
         v2 = V2.basis()[j]
@@ -451,35 +454,78 @@ def triformBasisVecs():
         if calc1 < 0.0000001:
             calc1 = 0
         print(calc1)
+        sol.append(calc1)
         if calc1 != 0:
             print(v1)
             print(v2)
             print(v3)
         print("")
+    return sol
 # How to do Whittaker?
 
+def createHeader():
+    header = ["Representation"]
+    dim1, dim2, dim3 = q+1, q+1, q+1
+
+    if numCus == 1:
+        dim3 = q-1
+    elif numCus == 2:
+        dim2, dim3 = q-1, q-1
+    elif numCus == 3:
+        dim1, dim2, dim3 = q-1, q-1, q-1
+    
+    for i in range(dim1):
+            for j in range(dim2):
+                for k in range(dim3):
+                    header.append((i, j, k))
+    print(header)
+    return header
 
 
+
+V1 = Vinduced if numCus < 3 else Vcuspidal
+V2 = Vinduced if numCus < 2 else Vcuspidal
+V3 = Vinduced if numCus < 1 else Vcuspidal
 
 
 
 ################# CHANGE HERE!
 
-decomposeChars()
+#decomposeChars()
 validCombinations()
 
 
-char1 = goodCharsB[0]
-char2 = nondecomposableChars[7]
-char3 = nondecomposableChars[8]
+header = createHeader()
+print(len(header))
+print("")
 
 
-V1 = Vinduced if char1 in goodCharsB else Vcuspidal
-V2 = Vinduced if char2 in goodCharsB else Vcuspidal
-V3 = Vinduced if char3 in goodCharsB else Vcuspidal
+reps = [
+        (0, 0, 3),
+        (0, 4, 9),
+        (1, 1, 2),
+        (1, 7, 9),
+        (2, 3, 3)
+        ]
+reps = []
+
+data = [header]
+char1, char2, char3 = 0, 0, 0
+
+for rep in reps:
+    char1 = nondecomposableChars[rep[0]]
+    char2 = nondecomposableChars[rep[1]]
+    char3 = nondecomposableChars[rep[2]]
+    
+    s = triformBasisVecs()
+    s.insert(0, "rho" + str(rep[0]) + " rho" + str(rep[1]) + " rho" + str(rep[2]))
+    data.append(s)
+    print("Completed rep " + str(rep))
 
 
+with open('3cusp.csv', 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerows(data)
 
-triformBasisVecs()
 
 #################

@@ -4,8 +4,8 @@ q = 5
 
 
 # Set how many q and q+1 dimensional we want - must add up to 3
-numQp1 = 0
-numQ = 3
+numQp1 = 3
+numQ = 0
 
 #################
 
@@ -42,10 +42,6 @@ H = Hom(Vinduced, Vinduced)
 
 # Representatives
 # Use .index() to find index
-
-# For Cuspidal:
-basisRepsCuspidal = K.list()
-basisRepsCuspidal.remove(0)
 
 # Reps of B
 cosetRepsB = []
@@ -323,7 +319,7 @@ def findGsubspace(chi):
 
 
 
-
+print(rep)
 
 
 # Evaluates function vec at value g
@@ -390,10 +386,37 @@ def RStrilinearForm(v1, v2, v3):
         val2 = whittaker(g, v2, induced2)
         if val2 == 0:
             continue
-        s = s + val1 * val2 * whittaker2(g, v3, induced3)
+        val3 = whittaker2(g, v3, induced3)
+        if val3 == 0:
+            continue
+        #print(g)
+        #print(val1 * val2 * val3)
+        s = s + val1 * val2 * val3
 
     s = s / G.order()
+    #print(s)
     return QQ(norm(s))
+
+    '''
+    if almostSol == 0:
+        return 0
+
+    normalizingFactor1 = 0
+    for uRep in cosetRepsU:
+        normalizingFactor1 = normalizingFactor1 + norm(whittaker(uRep, v2, induced2))
+    normalizingFactor1 = normalizingFactor1 / (q-1)^2
+
+    normalizingFactor2 = 0
+    for uRep in cosetRepsU:
+        normalizingFactor2 = normalizingFactor2 + norm(whittaker2(uRep, v3, induced3))
+    normalizingFactor2 = normalizingFactor2 / (q-1)^2
+
+    print(normalizingFactor1)
+    print(normalizingFactor2)
+
+    #return QQ(almostSol / normalizingFactor1 / normalizingFactor2)
+    return almostSol
+    '''
 print("")
 
 
@@ -425,7 +448,7 @@ def triformBasisVecs():
 # This is a function now so below can be easily commented in/out to toggle
 
 
-# Hits (when numQ = 1) the three varieties that matter
+# Hits the varieties that matter
 def triformBasisVecsShort():
     if numQ == 1:
         triformBasisVecsH(0, 0, 0)
@@ -434,19 +457,25 @@ def triformBasisVecsShort():
         triformBasisVecsH(0, 0, 1)
         triformBasisVecsH(0, q, 0)
         triformBasisVecsH(q, 0, 0)
+    if numQ == 0:
+        triformBasisVecsH(0, 1, 2)
+        triformBasisVecsH(0, 0, 0)
+        triformBasisVecsH(1, 0, 0)
+        triformBasisVecsH(0, 1, 0)
+        triformBasisVecsH(0, 0, 1)
 
 
 
 
 ################# CHANGE HERE!
 
-decomposeChars()
-validCombinations()
+#decomposeChars()
+#validCombinations()
 
 
-induced1 = badCharsB[1]
-induced2 = badCharsB[3]
-induced3 = badCharsB[3]
+induced1 = goodCharsB[0]
+induced2 = goodCharsB[2]
+induced3 = goodCharsB[3]
 
 
 V1 = Vinduced if induced1 in goodCharsB else findGsubspace(induced1).complement()
@@ -454,8 +483,15 @@ V2 = Vinduced if induced2 in goodCharsB else findGsubspace(induced2).complement(
 V3 = Vinduced if induced3 in goodCharsB else findGsubspace(induced3).complement()
 
 
+vec1 = Vinduced.basis()[q]
+vec2 = Vinduced.basis()[0]
+vec3 = Vinduced.basis()[1]
 
-triformBasisVecs()
-#triformBasisVecsShort()
+#print(RStrilinearForm(vec1, vec2, vec3))
+
+
+
+#triformBasisVecs()
+triformBasisVecsShort()
 
 #################
