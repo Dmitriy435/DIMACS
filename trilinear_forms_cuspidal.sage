@@ -7,8 +7,9 @@ q = 5
 
 # Set how many induced and cuspidal we want - must add up to 3
 
-numInd = 0 #For now only working with good chars!
-numCus = 3 #This is at least 1 for this file
+
+numCus = 1 #This is at least 1 for this file
+numInd = 3 - numCus
 
 #################
 
@@ -36,10 +37,12 @@ U = G.subgroup(gens)
 # Vector subspaces:
 Vcuspidal = VectorSpace(QQbar, q-1)
 Vinduced = VectorSpace(QQbar, q+1)
+
+# Causes floating point errors
+#Vcuspidal = VectorSpace(CDF, q-1)
+#Vinduced = VectorSpace(CDF, q+1)
+
 H = Hom(Vinduced, Vinduced)
-
-
-
 
 
 
@@ -205,6 +208,7 @@ def decomposeChars():
 
 # Prints all valid combinations as specificed by start of how many cusp
 def validCombinations():
+    combos = []
     if numCus == 1:
         C = Combinations(list(range(len(goodCharsB))) * 2, 2)
         count = 0
@@ -227,6 +231,7 @@ def validCombinations():
                     print(chars, end=", ")
                     print(i)
                     count = count + 1
+                    combos.append((chars[0], chars[1], i))
         print("There are " + str(count) + " combos")
     if numCus == 2:
         C = Combinations(list(range(len(nondecomposableChars))) * 2, 2)
@@ -251,6 +256,7 @@ def validCombinations():
                     print(i, end=", ")
                     print(chars)
                     count = count + 1
+                    combos.append((i, chars[0], chars[1]))
         print("There are " + str(count) + " combos")
     if numCus == 3:
         C = Combinations(list(range(len(nondecomposableChars))) * 3, 3)
@@ -271,8 +277,10 @@ def validCombinations():
                 print("Triple of three cuspidal reps with trivial central character:")
                 print(chars)
                 count = count + 1
+                combos.append((chars[0], chars[1], chars[2]))
         print("There are " + str(count) + " combos")
     print("\n")
+    return combos
 
 
 
@@ -487,14 +495,16 @@ V1 = Vinduced if numCus < 3 else Vcuspidal
 V2 = Vinduced if numCus < 2 else Vcuspidal
 V3 = Vinduced if numCus < 1 else Vcuspidal
 
+char1, char2, char3 = 0, 0, 0
+
 
 
 ################# CHANGE HERE!
 
 #decomposeChars()
-validCombinations()
+#validCombinations()
 
-
+'''
 header = createHeader()
 print(len(header))
 print("")
@@ -507,7 +517,7 @@ reps = [
         (1, 7, 9),
         (2, 3, 3)
         ]
-reps = []
+#reps = []
 
 data = [header]
 char1, char2, char3 = 0, 0, 0
@@ -521,11 +531,36 @@ for rep in reps:
     s.insert(0, "rho" + str(rep[0]) + " rho" + str(rep[1]) + " rho" + str(rep[2]))
     data.append(s)
     print("Completed rep " + str(rep))
+'''
+
+header = createHeader()
+combos = validCombinations()
+data = [header]
+countreps = 0
+for combo in combos:
+    countreps = countreps + 1
+    print(combo)
+    char1 = goodCharsB[combo[0]] if numCus < 3 else nondecomposableChars[combo[0]]
+    char2 = goodCharsB[combo[1]] if numCus < 2 else nondecomposableChars[combo[1]]
+    char3 = goodCharsB[combo[2]] if numCus < 1 else nondecomposableChars[combo[2]]
+
+    s = triformBasisVecs()
+    if numCus == 3:
+        s.insert(0, "rho" + str(combo[0]) + " rho" + str(combo[1]) + " rho" + str(combo[2]))
+    elif numCus == 2:
+        s.insert(0, "pi" + str(combo[0]) + " rho" + str(combo[1]) + " rho" + str(combo[2]))
+    elif numCus == 1:
+        s.insert(0, "pi" + str(combo[0]) + " pi" + str(combo[1]) + " rho" + str(combo[2]))
+    data.append(s)
+    print("Completed rep " + str(combo))
+    print("This was " + str(countreps) + " out of " + str(len(combos)) + "\n")
 
 
-with open('3cusp.csv', 'w', newline='') as csvfile:
+with open(str(numCus) + 'cusp_q' + str(q) + '.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerows(data)
 
 
 #################
+
+# https://mpmath.org/doc/current/identification.html#identify
