@@ -5,6 +5,7 @@ from sage.all_cmdline import *   # import sage library
 
 _sage_const_4 = Integer(4); _sage_const_1 = Integer(1); _sage_const_3 = Integer(3); _sage_const_2 = Integer(2); _sage_const_0 = Integer(0); _sage_const_0p000001 = RealNumber('0.000001'); _sage_const_0p0000001 = RealNumber('0.0000001')
 import csv
+from mpmath import *
 
 ################# CHANGE HERE!
 
@@ -41,12 +42,14 @@ U = G.subgroup(gens)
 
 
 # Vector subspaces:
-Vcuspidal = VectorSpace(CDF, q-_sage_const_1 )
-Vinduced = VectorSpace(CDF, q+_sage_const_1 )
+Vcuspidal = VectorSpace(QQbar, q-_sage_const_1 )
+Vinduced = VectorSpace(QQbar, q+_sage_const_1 )
+
+# Causes floating point errors, needed for the identification package
+#Vcuspidal = VectorSpace(ComplexField(170), q-1)
+#Vinduced = VectorSpace(ComplexField(170), q+1)
+
 H = Hom(Vinduced, Vinduced)
-
-
-
 
 
 
@@ -57,6 +60,7 @@ H = Hom(Vinduced, Vinduced)
 # For Cuspidal:
 basisRepsCuspidal = K.list()
 basisRepsCuspidal.remove(_sage_const_0 )
+
 
 # Reps of B
 cosetRepsB = []
@@ -359,9 +363,9 @@ def gActionCuspidal(g, vec, nondecompChar):
             
             oldRep = basisRepsCuspidal[i]
             for j in range(_sage_const_0 , q-_sage_const_1 ):
-                y = basisRepsCuspidal[j]
-                newVec[j] = newVec[j] + coeff(y, oldRep, g, nondecompChar) * vec[i]
-        
+                if i == j: # TEMPORARY DELETE AFTERWARDS!!!!! MAYBE MORE EFFICIENT THIS WAY??? Only for purposes of dot product with itself
+                    y = basisRepsCuspidal[j]
+                    newVec[j] = newVec[j] + coeff(y, oldRep, g, nondecompChar) * vec[i]     
         return newVec
 # Fast
 
@@ -376,9 +380,8 @@ def coeff(y, x, g, nondecompChar):
 
     comparison = y * (_sage_const_1  / x) * (a*d - b*c)
     for u in L:
-        if u != _sage_const_0  and u * conjugateOfL(u) == comparison:
+        if u * conjugateOfL(u) == comparison:
             temp = temp + nu(u, nondecompChar) * psi(- (x / c) * (u + conjugateOfL(u)))
-    
     return temp * psi((a * y + d * x) / c) / q
 # Fast as well
 
@@ -426,15 +429,12 @@ def tripleProduct(g, v1, v2, v3):
         two = matrixCoeffCuspidal(g, v2, v2, char2)
     if two == _sage_const_0 :
         return _sage_const_0 
-
+    
     if char3 in goodCharsB:
         three = matrixCoeffInduced(g, v3, v3, char3)
     else:
         three = matrixCoeffCuspidal(g, v3, v3, char3)
-    #sol = one * two * three
-    #if sol != 0:
-    #    print(g.inverse())
-    #print(one * two * three)
+
     return one * two * three
 
 # Gives trilinear form by avergaing matrix coefficients over the whole group
@@ -465,12 +465,24 @@ def triformBasisVecs():
         calc1 = trilinearForm(v1, v2, v3)
         if calc1 < _sage_const_0p0000001 :
             calc1 = _sage_const_0 
-        print(calc1)
-        sol.append(calc1)
-        if calc1 != _sage_const_0 :
-            print(v1)
-            print(v2)
-            print(v3)
+        s = calc1
+        #if q == 4:
+        #    s = identify(calc1, ['sqrt(5)'])
+        #if q == 5:
+        #    s = identify(calc1, ['sqrt(3)', 'sqrt(2)', 'sqrt(6)'])
+
+        print(s)
+        sol.append(s)
+        #if (s == "0"):
+        #    print(s)
+        #    sol.append(s)
+        #else:
+        #    print(s[1:-1])
+        #    sol.append(s[1:-1])
+        #if calc1 != 0:
+        #    print(v1)
+        #    print(v2)
+        #    print(v3)
         print("")
     return sol
 # How to do Whittaker?
@@ -515,26 +527,30 @@ print("")
 
 
 reps = [
-        (0, 0, 3),
-        (0, 4, 9),
-        (1, 1, 2),
-        (1, 7, 9),
-        (2, 3, 3)
+        (0, 1, 0)
         ]
-#reps = []
 
 data = [header]
 char1, char2, char3 = 0, 0, 0
 
 for rep in reps:
-    char1 = nondecomposableChars[rep[0]]
-    char2 = nondecomposableChars[rep[1]]
+    char1 = goodCharsB[rep[0]]
+    char2 = goodCharsB[rep[1]]
     char3 = nondecomposableChars[rep[2]]
+
+    v1 = V1.basis()[4]
+    v2 = V2.basis()[3]
+    v3 = V3.basis()[2]
+
+    calc = trilinearForm(v1, v2, v3)
+    print(identify(calc, ['sqrt(5)']))
     
-    s = triformBasisVecs()
-    s.insert(0, "rho" + str(rep[0]) + " rho" + str(rep[1]) + " rho" + str(rep[2]))
-    data.append(s)
-    print("Completed rep " + str(rep))
+    #s = triformBasisVecs()
+    #s.insert(0, "rho" + str(rep[0]) + " rho" + str(rep[1]) + " rho" + str(rep[2]))
+    #data.append(s)
+    #print("Completed rep " + str(rep))
+
+
 '''
 
 header = createHeader()
@@ -558,7 +574,8 @@ for combo in combos:
     data.append(s)
     print("Completed rep " + str(combo))
     print("This was " + str(countreps) + " out of " + str(len(combos)) + "\n")
-    break
+    if countreps == _sage_const_3 :
+        break
 
 
 with open(str(numCus) + 'cusp_q' + str(q) + '.csv', 'w', newline='') as csvfile:

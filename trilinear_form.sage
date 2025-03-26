@@ -1,9 +1,9 @@
 # THIS FILE IS OBSOLETE - DO NOT USE
-
+from mpmath import *
 
 #################
 
-q = 5
+q = 4
 
 #################
 
@@ -19,6 +19,9 @@ L = GF(q^2)
 
 # Borel subgroup
 a = K.zeta()
+print("This is the generator of K^*:")
+print(a)
+print()
 gens = [MS([[1,1],[0,1]]),MS([[a,0],[0,1]]), MS([[1,0],[0,a]])]
 B = G.subgroup(gens)
 
@@ -46,12 +49,16 @@ H = Hom(Vinduced, Vinduced)
 basisRepsCuspidal = K.list()
 basisRepsCuspidal.remove(0)
 
+#print(basisRepsCuspidal[0])
+
 # Reps of B
 cosetRepsB = []
 for x in K:
     rep = G(MS([[1,0],[-x,1]]))
     cosetRepsB.append(rep)
+    print(rep)
 rep = G(MS([[0,1],[1,0]]))
+print(rep)
 cosetRepsB.append(rep)
 
 
@@ -214,6 +221,11 @@ print("This is how many nondecomp chars of L we have (double counted reps remove
 print(len(nondecomposableChars))
 print("")
 
+#Giving what these chars actually are:
+aL = L.zeta()
+
+
+# See "https://doc.sagemath.org/html/en/reference/number_fields/sage/rings/number_field/number_field_element.html#sage.rings.number_field.number_field_element.NumberFieldElement.coordinates_in_terms_of_powers"
 
 
 # Char of L - takes in elem in L and an elem in nondecomposableChars
@@ -222,13 +234,44 @@ def nu(l, nondecompChar):
     return nondecompChar(v)
 
 
+print(aL)
+print("This is cuspidal char " + str(2) + "'s value on generator of L^*")
+temp = (nu(aL, nondecomposableChars[2])).complex_embedding()
+print(temp)
+print(arg(temp)*15 / 2 / pi)
 
 
+print()
 
+determinantG = 0
+i = 0
+for x in K:
+    print("Value of psi on " + str(x))
+    print(psi(x))
+    i = i + 1
+    if i == 3:
+        determinantG = x
+print()
 
+print(determinantG)
+print(determinantG * determinantG * determinantG)
+#print(determinantG + determinantG)
+print()
 
+print("Finding u:")
+print()
+for u in L:
+    if u * conjugateOfL(u) == determinantG:
+        print(u)
+        print(u + conjugateOfL(u))
+        print(psi(u + conjugateOfL(u)))
+        print(arg(nu(u, nondecomposableChars[2]).complex_embedding())* 15 / 2 / pi)
+        print()
 
-
+kappa = e^(2 * pi / 15)
+t = -kappa^(-2) + kappa^(-5) - kappa^7 + kappa^4 + kappa
+t = -t / 4
+print(t)
 
 
 
