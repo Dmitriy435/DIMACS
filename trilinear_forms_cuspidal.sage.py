@@ -574,8 +574,6 @@ for combo in combos:
     data.append(s)
     print("Completed rep " + str(combo))
     print("This was " + str(countreps) + " out of " + str(len(combos)) + "\n")
-    if countreps == _sage_const_3 :
-        break
 
 
 with open(str(numCus) + 'cusp_q' + str(q) + '.csv', 'w', newline='') as csvfile:

@@ -394,18 +394,21 @@ def evalInduced(g, vec, char):
         return 0
     b = g * rep.inverse()
     return vec[index] * char(b)
+# Relatively fast
 
 
 # Matrix coeff of cuspidal
 def matrixCoeffCuspidal(g, vec1, vec2, nondecompChar):
     v = gActionCuspidal(g, vec1, nondecompChar)
     return v.dot_product(conjugate(vec2))
+# Fast
 
 
 # Matrix coeff of Induced (no matter what irrep in particular)
 def matrixCoeffInduced(g, vec1, vec2, chi):
     v = gActionInduced(g, vec1, chi)
     return v.dot_product(conjugate(vec2))
+# Fast
 
 
 # Gives the triple product - have to specify the representations inside the function
