@@ -8,7 +8,7 @@ import time
 
 ################# CHANGE HERE!
 
-q = 5
+q = 7
 
 
 # Set how many induced and cuspidal we want - must add up to 3
@@ -420,8 +420,21 @@ char1, char2, char3 = 0, 0, 0
 
 
 
-combos = validCombinations()
-data = []
+combos = []
+
+if Path("data/" + str(numCus) + 'cusp_q' + str(q) + "/representation_combinations.csv").exists():
+    with open("data/" + str(numCus) + 'cusp_q' + str(q) + "/representation_combinations.csv", 'r') as csvfile:
+        for row in csv.reader(csvfile):
+            combos.append(row)
+else:
+    combos = validCombinations()
+    with open("data/" + str(numCus) + 'cusp_q' + str(q) + "/representation_combinations.csv", 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(combos)
+
+
+
+
 print("There are " + str(len(combos)) + " representations, input which you want to find: ")
 whichcombo = int(input(""))
 combo = combos[whichcombo]
@@ -430,21 +443,29 @@ print("There are " + str(V1.dimension() * V2.dimension() * V3.dimension()) + " t
 whichBasis = int(input(""))
 print("")
 
-# NEED TO ADD SAFEGUARDS IF INPUT IS NOT VALID!!!
+# Need to include safeguards if inputs outside of range???
 
 folder_path = "data/" + str(numCus) + 'cusp_q' + str(q) + "/" + str(whichcombo).zfill(3)
 Path(folder_path).mkdir(parents=True, exist_ok=True)
+
+
+
+
 
 #if Path(folder_path + "/" + str(whichBasis).zfill(4) + '.csv').exists():
 #    print("Already done!")
 #else:
 
+
+
+
 print(combo)
-char1 = goodCharsB[combo[0]] if numCus < 3 else nondecomposableChars[combo[0]]
-char2 = goodCharsB[combo[1]] if numCus < 2 else nondecomposableChars[combo[1]]
-char3 = goodCharsB[combo[2]] if numCus < 1 else nondecomposableChars[combo[2]]
+char1 = goodCharsB[int(combo[0])] if numCus < 3 else nondecomposableChars[int(combo[0])]
+char2 = goodCharsB[int(combo[1])] if numCus < 2 else nondecomposableChars[int(combo[1])]
+char3 = goodCharsB[int(combo[2])] if numCus < 1 else nondecomposableChars[int(combo[2])]
 
 s = triformBasisVecs(whichBasis)
+data = []
 if numCus == 3:
     s.insert(0, "rho" + str(combo[0]) + " rho" + str(combo[1]) + " rho" + str(combo[2]))
 elif numCus == 2:
