@@ -249,10 +249,9 @@ def gActionCuspidal(g, vec, nondecompChar):
                 continue
             
             oldRep = basisRepsCuspidal[i]
-            for j in range(0, q-1):
-                if i == j: # TEMPORARY DELETE AFTERWARDS!!!!! MAYBE MORE EFFICIENT THIS WAY??? Only for purposes of dot product with itself
-                    y = basisRepsCuspidal[j]
-                    newVec[j] = newVec[j] + coeff(y, oldRep, g, nondecompChar) * vec[i]     
+            y = basisRepsCuspidal[i]
+            newVec[i] = newVec[i] + coeff(y, oldRep, g, nondecompChar) * vec[i] 
+              
         return newVec
 # LOOK INTO OPTIMIZING THIS!!! - this is probably the bottleneck
 
