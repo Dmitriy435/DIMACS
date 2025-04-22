@@ -194,23 +194,47 @@ def toRepresentativeInduced(g):
     else:
         x = (K.one() / g.inverse().matrix()[0][0]) * g.inverse().matrix()[1][0]
         return G(MS([[1,0],[x,1]])).inverse()
-# Constant time
+# Could be optimized, lots of inverses?
 
-
+#sum1, sum2, sum3, sum4 = 0
+#count1, count2, count3, count4 = 0
 # Gives the G action result of group element g from G onto vector v from V, with rep induced by chi
 def gActionInduced(g, vec, chi):
+    #global sum1, count1, sum2, count2, sum3, count3, sum4, count4
+
     newVec = Vinduced([0] * (q+1))
     for i in range(0, q+1):
         if vec[i] == 0:
             continue
+        
+
+        #start = time.time()
+
         newRep = toRepresentativeInduced(cosetRepsB[i] * g.inverse())
-        #print(newRep)
+
+        #end = time.time()
+        #sum1 = sum1 + end - start
+        #count1 = count1 + 1
+
+        #start = time.time()
         b = cosetRepsB[i] * g.inverse() * newRep.inverse()
+        #end = time.time()
+        #sum2 = sum2 + end - start
+        #count2 = count2 + 1
         
         newIndex = cosetRepsB.index(newRep)
 
+        #start = time.time()
         newVec[newIndex] = newVec[newIndex] + chi(b.inverse()) * vec[i]
-        #print(chi(b.inverse()) * vec[i])
+       # end = time.time()
+        #sum3 = sum3 + end - start
+        #count3 = count3 + 1
+
+       # start = time.time()
+        g.inverse()
+       # end = time.time()
+        #sum4 = sum4 + end - start
+        #count4 = count4 + 1
 
     return newVec
 # CAN POSSIBLY OPTIMIZE THIS TOO???
@@ -250,8 +274,10 @@ def gActionCuspidal(g, vec, nondecompChar):
             
             oldRep = basisRepsCuspidal[i]
             y = basisRepsCuspidal[i]
-            newVec[i] = newVec[i] + coeff(y, oldRep, g, nondecompChar) * vec[i] 
-              
+            newVec[i] = newVec[i] + coeff(y, oldRep, g, nondecompChar) * vec[i] # TEMPORARY DELETE AFTERWARDS!!!!! MAYBE MORE EFFICIENT THIS WAY??? Only for purposes of dot product with itself
+            #for j in range(0, q-1):
+            #    y = basisRepsCuspidal[j]
+            #    newVec[j] = newVec[j] + coeff(y, oldRep, g, nondecompChar) * vec[i]     
         return newVec
 # LOOK INTO OPTIMIZING THIS!!! - this is probably the bottleneck
 
@@ -288,35 +314,35 @@ def evalInduced(g, vec, char):
     return vec[index] * char(b)
 # Relatively fast
 
-sumOfTimesCuspidal = 0
-countCuspidal = 0
+#sumOfTimesCuspidal = 0
+#countCuspidal = 0
 # Matrix coeff of cuspidal
 def matrixCoeffCuspidal(g, vec1, vec2, nondecompChar):
-    global sumOfTimesCuspidal
-    global countCuspidal
-    start = time.time()
+    #global sumOfTimesCuspidal
+    #global countCuspidal
+   # start = time.time()
     v = gActionCuspidal(g, vec1, nondecompChar)
-    end = time.time()
+    #end = time.time()
     #print("Matrix coeff cusp time: ")
     #print(end - start)
-    sumOfTimesCuspidal = sumOfTimesCuspidal + end - start
-    countCuspidal = countCuspidal + 1
+    #sumOfTimesCuspidal = sumOfTimesCuspidal + end - start
+    #countCuspidal = countCuspidal + 1
 
     return v.dot_product(conjugate(vec2))
 # 
 
 
-sumOfTimesInduced = 0
-countInduced = 0
+#sumOfTimesInduced = 0
+#countInduced = 0
 # Matrix coeff of Induced (no matter what irrep in particular)
 def matrixCoeffInduced(g, vec1, vec2, chi):
-    global sumOfTimesInduced
-    global countInduced
-    start = time.time()
+    #global sumOfTimesInduced
+    #global countInduced
+    #start = time.time()
     v = gActionInduced(g, vec1, chi)
-    end = time.time()
-    sumOfTimesInduced = sumOfTimesInduced + end - start
-    countInduced = countInduced + 1
+    #end = time.time()
+    #sumOfTimesInduced = sumOfTimesInduced + end - start
+    #countInduced = countInduced + 1
 
     return v.dot_product(conjugate(vec2))
 # 
@@ -448,36 +474,32 @@ folder_path = "data/" + str(numCus) + 'cusp_q' + str(q) + "/" + str(whichcombo).
 Path(folder_path).mkdir(parents=True, exist_ok=True)
 
 
-
-
-
-#if Path(folder_path + "/" + str(whichBasis).zfill(4) + '.csv').exists():
-#    print("Already done!")
-#else:
-
-
-
-
 print(combo)
 char1 = goodCharsB[int(combo[0])] if numCus < 3 else nondecomposableChars[int(combo[0])]
 char2 = goodCharsB[int(combo[1])] if numCus < 2 else nondecomposableChars[int(combo[1])]
 char3 = goodCharsB[int(combo[2])] if numCus < 1 else nondecomposableChars[int(combo[2])]
 
-s = triformBasisVecs(whichBasis)
-data = []
-if numCus == 3:
-    s.insert(0, "rho" + str(combo[0]) + " rho" + str(combo[1]) + " rho" + str(combo[2]))
-elif numCus == 2:
-    s.insert(0, "pi" + str(combo[0]) + " rho" + str(combo[1]) + " rho" + str(combo[2]))
-elif numCus == 1:
-    s.insert(0, "pi" + str(combo[0]) + " pi" + str(combo[1]) + " rho" + str(combo[2]))
-data.append(s)
-with open(folder_path + "/" + str(whichBasis).zfill(4) + '.csv', 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerows(data)
-    print("Completed basis " + str(basisCombos[whichBasis]) + " of rep " + str(combo))
+
+if Path(folder_path + "/" + str(whichBasis).zfill(4) + '.csv').exists():
+    print("Already done!")
+else:
+
+    s = triformBasisVecs(whichBasis)
+    data = []
+    if numCus == 3:
+        s.insert(0, "rho" + str(combo[0]) + " rho" + str(combo[1]) + " rho" + str(combo[2]))
+    elif numCus == 2:
+        s.insert(0, "pi" + str(combo[0]) + " rho" + str(combo[1]) + " rho" + str(combo[2]))
+    elif numCus == 1:
+        s.insert(0, "pi" + str(combo[0]) + " pi" + str(combo[1]) + " rho" + str(combo[2]))
+    data.append(s)
+    with open(folder_path + "/" + str(whichBasis).zfill(4) + '.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(data)
+        print("Completed basis " + str(basisCombos[whichBasis]) + " of rep " + str(combo))
 
 
+# Optimization testing:
 '''
 print("Average time for matrixCoeffInduced:")
 if (countInduced == 0):
@@ -488,4 +510,20 @@ print(countInduced)
 print("Average time for matrixCoeffCuspidal:")
 print(sumOfTimesCuspidal / countCuspidal)
 print(countCuspidal)
+
+
+
+
+print("Average time for sum1:")
+print(sum1 / count1)
+print(count1)
+print("Average time for sum2:")
+print(sum2 / count2)
+print(count2)
+print("Average time for sum3:")
+print(sum3 / count3)
+print(count3)
+print("Average time for sum4:")
+print(sum4 / count4)
+print(count4)
 '''
