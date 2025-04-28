@@ -47,7 +47,7 @@ print(data.dtype)
 
 
 for subFolder in os.listdir(folder):
-    if subFolder[0] != 'r' and subFolder[0] != 'c':
+    if subFolder[0] == '0' or subFolder[0] == '1':
         t = folder + "/" + subFolder
         for file in os.listdir(t):
             with open(t+"/"+file, 'r') as csvfile:
