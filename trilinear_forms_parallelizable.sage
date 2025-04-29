@@ -8,7 +8,7 @@ import time
 
 ################# CHANGE HERE!
 
-q = 7
+q = 5
 
 
 # Set how many induced and cuspidal we want - must add up to 3
@@ -294,7 +294,7 @@ def coeff(y, x, g, nondecompChar):
     for u in L:
         if u * conjugateOfL(u) == comparison:
             temp = temp + nu(u, nondecompChar) * psi(- (x / c) * (u + conjugateOfL(u)))
-    return temp * psi((a * y + d * x) / c) / q
+    return - temp * psi((a * y + d * x) / c) / q # Negative sign has been added
 # Fast as well
 
 

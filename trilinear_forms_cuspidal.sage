@@ -3,7 +3,7 @@ from mpmath import *
 
 ################# CHANGE HERE!
 
-q = 4
+q = 5
 
 
 # Set how many induced and cuspidal we want - must add up to 3
@@ -183,6 +183,28 @@ print("")
 def nu(l, nondecompChar):
     v = Lx(MSforL([l]))
     return nondecompChar(v)
+
+'''
+def j(u):
+    sum = 0
+    for l in Lx:
+        if (l^(q+1)).matrix()[0,0] == u:
+            sum = sum + psi((l).matrix()[0, 0] + (l^q).matrix()[0, 0]) * nu(l.matrix()[0,0], nondecomposableChars[0])
+    return - sum / q
+
+x = 1
+y = 3
+
+s = 0
+for v in K:
+    if v != 0:
+        s = s + j(x * v) * j(y * v) * psi(v) / nu(v, nondecomposableChars[0])
+print("The left hand side is " + str(s))
+
+s2 = nu(-1, nondecomposableChars[0]) * psi(-x-y) * j(x*y)
+print("The right hand side is " + str(s2))
+'''
+
 
 
 
@@ -376,7 +398,7 @@ def coeff(y, x, g, nondecompChar):
     for u in L:
         if u * conjugateOfL(u) == comparison:
             temp = temp + nu(u, nondecompChar) * psi(- (x / c) * (u + conjugateOfL(u)))
-    return temp * psi((a * y + d * x) / c) / q
+    return - temp * psi((a * y + d * x) / c) / q # Negative sign has been added
 # Fast as well
 
 
@@ -549,7 +571,7 @@ for rep in reps:
 
 
 '''
-
+'''
 header = createHeader()
 combos = validCombinations()
 data = [header]
@@ -576,6 +598,7 @@ for combo in combos:
 with open(str(numCus) + 'cusp_q' + str(q) + '.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerows(data)
+'''
 
 
 #################
