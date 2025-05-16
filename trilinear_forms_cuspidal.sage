@@ -570,7 +570,7 @@ for rep in reps:
     #print("Completed rep " + str(rep))
 
 
-'''
+
 '''
 header = createHeader()
 combos = validCombinations()
@@ -595,10 +595,10 @@ for combo in combos:
     print("This was " + str(countreps) + " out of " + str(len(combos)) + "\n")
 
 
-with open(str(numCus) + 'cusp_q' + str(q) + '.csv', 'w', newline='') as csvfile:
+with open('data/'+str(numCus) + 'cusp_q' + str(q) + '.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerows(data)
-'''
+
 
 
 #################

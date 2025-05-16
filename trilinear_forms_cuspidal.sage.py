@@ -190,24 +190,26 @@ def nu(l, nondecompChar):
     v = Lx(MSforL([l]))
     return nondecompChar(v)
 
+'''
 def j(u):
-    sum = _sage_const_0 
+    sum = 0
     for l in Lx:
-        if (l**(q+_sage_const_1 )).matrix()[_sage_const_0 ,_sage_const_0 ] == u:
-            sum = sum + psi((l).matrix()[_sage_const_0 , _sage_const_0 ] + (l**q).matrix()[_sage_const_0 , _sage_const_0 ]) * nu(l.matrix()[_sage_const_0 ,_sage_const_0 ], nondecomposableChars[_sage_const_0 ])
+        if (l^(q+1)).matrix()[0,0] == u:
+            sum = sum + psi((l).matrix()[0, 0] + (l^q).matrix()[0, 0]) * nu(l.matrix()[0,0], nondecomposableChars[0])
     return - sum / q
 
-x = _sage_const_1 
-y = _sage_const_3 
+x = 1
+y = 3
 
-s = _sage_const_0 
+s = 0
 for v in K:
-    if v != _sage_const_0 :
-        s = s + j(x * v) * j(y * v) * psi(v) / nu(v, nondecomposableChars[_sage_const_0 ])
+    if v != 0:
+        s = s + j(x * v) * j(y * v) * psi(v) / nu(v, nondecomposableChars[0])
 print("The left hand side is " + str(s))
 
-s2 = nu(-_sage_const_1 , nondecomposableChars[_sage_const_0 ]) * psi(-x-y) * j(x*y)
+s2 = nu(-1, nondecomposableChars[0]) * psi(-x-y) * j(x*y)
 print("The right hand side is " + str(s2))
+'''
 
 
 
@@ -402,7 +404,7 @@ def coeff(y, x, g, nondecompChar):
     for u in L:
         if u * conjugateOfL(u) == comparison:
             temp = temp + nu(u, nondecompChar) * psi(- (x / c) * (u + conjugateOfL(u)))
-    return temp * psi((a * y + d * x) / c) / q
+    return - temp * psi((a * y + d * x) / c) / q # Negative sign has been added
 # Fast as well
 
 
@@ -574,35 +576,35 @@ for rep in reps:
     #print("Completed rep " + str(rep))
 
 
-'''
+
 '''
 header = createHeader()
 combos = validCombinations()
 data = [header]
-countreps = 0
+countreps = _sage_const_0 
 for combo in combos:
-    countreps = countreps + 1
+    countreps = countreps + _sage_const_1 
     print(combo)
-    char1 = goodCharsB[combo[0]] if numCus < 3 else nondecomposableChars[combo[0]]
-    char2 = goodCharsB[combo[1]] if numCus < 2 else nondecomposableChars[combo[1]]
-    char3 = goodCharsB[combo[2]] if numCus < 1 else nondecomposableChars[combo[2]]
+    char1 = goodCharsB[combo[_sage_const_0 ]] if numCus < _sage_const_3  else nondecomposableChars[combo[_sage_const_0 ]]
+    char2 = goodCharsB[combo[_sage_const_1 ]] if numCus < _sage_const_2  else nondecomposableChars[combo[_sage_const_1 ]]
+    char3 = goodCharsB[combo[_sage_const_2 ]] if numCus < _sage_const_1  else nondecomposableChars[combo[_sage_const_2 ]]
 
     s = triformBasisVecs()
-    if numCus == 3:
-        s.insert(0, "rho" + str(combo[0]) + " rho" + str(combo[1]) + " rho" + str(combo[2]))
-    elif numCus == 2:
-        s.insert(0, "pi" + str(combo[0]) + " rho" + str(combo[1]) + " rho" + str(combo[2]))
-    elif numCus == 1:
-        s.insert(0, "pi" + str(combo[0]) + " pi" + str(combo[1]) + " rho" + str(combo[2]))
+    if numCus == _sage_const_3 :
+        s.insert(_sage_const_0 , "rho" + str(combo[_sage_const_0 ]) + " rho" + str(combo[_sage_const_1 ]) + " rho" + str(combo[_sage_const_2 ]))
+    elif numCus == _sage_const_2 :
+        s.insert(_sage_const_0 , "pi" + str(combo[_sage_const_0 ]) + " rho" + str(combo[_sage_const_1 ]) + " rho" + str(combo[_sage_const_2 ]))
+    elif numCus == _sage_const_1 :
+        s.insert(_sage_const_0 , "pi" + str(combo[_sage_const_0 ]) + " pi" + str(combo[_sage_const_1 ]) + " rho" + str(combo[_sage_const_2 ]))
     data.append(s)
     print("Completed rep " + str(combo))
     print("This was " + str(countreps) + " out of " + str(len(combos)) + "\n")
 
 
-with open(str(numCus) + 'cusp_q' + str(q) + '.csv', 'w', newline='') as csvfile:
+with open('data/'+str(numCus) + 'cusp_q' + str(q) + '.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerows(data)
-'''
+
 
 
 #################
